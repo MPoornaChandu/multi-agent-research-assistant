@@ -65,7 +65,7 @@ TAVILY_API_KEY=your_real_key_here
 GEMINI_MODEL=gemini-2.5-flash-lite
 FAST_MODE=true
 TAVILY_MAX_RESULTS=2
-NEXT_PUBLIC_APP_URL=http://localhost:3000
+NEXT_PUBLIC_APP_URL=https://multi-agent-research-assistant-delta.vercel.app/
 ```
 
 `.env.local` is gitignored. Commit `.env.example`, not real API keys.
@@ -131,7 +131,7 @@ TAVILY_API_KEY=your_real_tavily_key_here
 GEMINI_MODEL=gemini-2.5-flash-lite
 FAST_MODE=true
 TAVILY_MAX_RESULTS=2
-NEXT_PUBLIC_APP_URL=http://localhost:3000
+NEXT_PUBLIC_APP_URL=https://multi-agent-research-assistant-delta.vercel.app/
 ```
 
 Restart:

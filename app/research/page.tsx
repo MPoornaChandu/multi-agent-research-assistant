@@ -152,6 +152,23 @@ export default function ResearchPage() {
   const [envStatus, setEnvStatus] = useState<EnvStatus | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const abortWasRequestedRef = useRef(false);
+  const initialTopicAppliedRef = useRef(false);
+
+  useEffect(() => {
+    if (initialTopicAppliedRef.current || typeof window === "undefined") {
+      return;
+    }
+
+    const initialTopic = new URLSearchParams(window.location.search)
+      .get("topic")
+      ?.replace(/\s+/g, " ")
+      .trim();
+
+    if (initialTopic) {
+      setTopic(initialTopic);
+      initialTopicAppliedRef.current = true;
+    }
+  }, []);
 
   useEffect(() => {
     let ignore = false;

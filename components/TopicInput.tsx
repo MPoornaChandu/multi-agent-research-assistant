@@ -101,14 +101,14 @@ export function TopicInput({
         </div>
       ) : null}
 
-      <div className="mt-5 grid gap-2">
+      <div className="mt-5 grid gap-3 sm:grid-cols-2">
         {EXAMPLE_TOPICS.map((example) => (
           <button
             key={example}
             type="button"
             disabled={isRunning}
             onClick={() => onTopicChange(example)}
-            className="rounded-lg border border-studio-ink/10 bg-white/60 px-3 py-2 text-left text-sm font-medium leading-6 text-studio-graphite transition hover:border-studio-sage hover:bg-studio-sage/15 disabled:cursor-not-allowed disabled:opacity-60"
+            className="rounded-full border border-studio-ink/10 bg-studio-cream/75 px-4 py-2.5 text-left text-sm font-semibold leading-5 text-studio-graphite shadow-soft transition hover:border-studio-sage hover:bg-studio-sage/15 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {example}
           </button>

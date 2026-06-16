@@ -4,13 +4,13 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import {
   ArrowRight,
-  Bot,
   BriefcaseBusiness,
   CheckCircle2,
   FileText,
   GitBranch,
+  Github,
   Layers3,
-  Network,
+  Linkedin,
   RadioTower,
   Route,
   Search,
@@ -72,6 +72,14 @@ const valuePoints = [
   "Packages the work as a polished portfolio product for internship reviewers."
 ];
 
+const SAMPLE_TOPIC = "Future of AI agents in software engineering internships";
+const SAMPLE_RESEARCH_HREF = `/research?topic=${encodeURIComponent(SAMPLE_TOPIC)}`;
+const PROJECT_GITHUB_URL =
+  "https://github.com/MPoornaChandu/multi-agent-research-assistant";
+const PROFILE_GITHUB_URL = "https://github.com/MPoornaChandu";
+const LINKEDIN_URL =
+  "https://www.linkedin.com/in/poorna-chandu-938119379/";
+
 const sectionVariants = {
   hidden: { opacity: 0, y: 28 },
   visible: { opacity: 1, y: 0 }
@@ -93,12 +101,21 @@ export default function HomePage() {
 
           <div className="hidden items-center gap-2 md:flex">
             <Link
-              href="/research"
+              href={SAMPLE_RESEARCH_HREF}
               className="studio-button inline-flex h-10 items-center gap-2 bg-studio-cream px-3 text-sm font-semibold text-studio-graphite"
             >
-              Try demo
+              Try sample
               <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </Link>
+            <a
+              href={PROJECT_GITHUB_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="studio-button inline-flex h-10 items-center gap-2 bg-studio-ink px-3 text-sm font-semibold text-studio-cream"
+            >
+              <Github className="h-4 w-4" aria-hidden="true" />
+              View GitHub
+            </a>
           </div>
         </nav>
       </header>
@@ -139,12 +156,21 @@ export default function HomePage() {
                 <ArrowRight className="h-4 w-4" aria-hidden="true" />
               </Link>
               <Link
-                href="/research"
+                href={SAMPLE_RESEARCH_HREF}
                 className="studio-button inline-flex h-12 items-center gap-2 bg-studio-cream px-5 text-sm font-semibold text-studio-graphite"
               >
-                Explore workflow
-                <Network className="h-4 w-4" aria-hidden="true" />
+                Try sample research
+                <Zap className="h-4 w-4" aria-hidden="true" />
               </Link>
+              <a
+                href={PROJECT_GITHUB_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="studio-button inline-flex h-12 items-center gap-2 bg-studio-coral px-5 text-sm font-semibold text-studio-ink"
+              >
+                <Github className="h-4 w-4" aria-hidden="true" />
+                View GitHub
+              </a>
             </div>
 
             <div className="mt-9 grid max-w-2xl gap-3 sm:grid-cols-3">
@@ -235,10 +261,10 @@ export default function HomePage() {
             </p>
             <div className="mt-6">
               <Link
-                href="/research"
+                href={SAMPLE_RESEARCH_HREF}
                 className="studio-button inline-flex h-11 items-center gap-2 bg-studio-coral px-4 text-sm font-bold text-studio-ink"
               >
-                Try demo
+                Try sample research
                 <Zap className="h-4 w-4" aria-hidden="true" />
               </Link>
             </div>
@@ -330,6 +356,32 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      <footer className="border-t border-studio-ink/10 px-5 py-8 md:px-8">
+        <div className="mx-auto flex max-w-7xl flex-col gap-4 text-sm font-semibold text-studio-graphite/75 md:flex-row md:items-center md:justify-between">
+          <p>Built by M. Poorna Chandu</p>
+          <div className="flex flex-wrap items-center gap-3">
+            <a
+              href={PROFILE_GITHUB_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex min-w-0 items-center gap-2 transition hover:text-studio-coral"
+            >
+              <Github className="h-4 w-4" aria-hidden="true" />
+              <span className="break-all">GitHub: {PROFILE_GITHUB_URL}</span>
+            </a>
+            <a
+              href={LINKEDIN_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex min-w-0 items-center gap-2 transition hover:text-studio-coral"
+            >
+              <Linkedin className="h-4 w-4" aria-hidden="true" />
+              <span className="break-all">LinkedIn: {LINKEDIN_URL}</span>
+            </a>
+          </div>
+        </div>
+      </footer>
     </main>
   );
 }

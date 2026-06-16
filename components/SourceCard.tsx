@@ -39,7 +39,7 @@ export function SourceCard({ source }: SourceCardProps) {
         <a
           href={source.url}
           target="_blank"
-          rel="noreferrer"
+          rel="noopener noreferrer"
           className="studio-button inline-flex items-center gap-2 bg-studio-ink px-3 py-2 text-sm font-semibold text-studio-cream"
         >
           <ExternalLink className="h-4 w-4" aria-hidden="true" />

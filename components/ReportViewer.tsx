@@ -68,7 +68,7 @@ export function ReportViewer({ report, isRunning = false }: ReportViewerProps) {
                 <a
                   href={href}
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
                   className="font-semibold text-studio-coral underline decoration-studio-coral/35 transition hover:text-studio-ink"
                 >
                   {children}
