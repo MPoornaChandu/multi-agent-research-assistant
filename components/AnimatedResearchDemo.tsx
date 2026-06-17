@@ -89,23 +89,23 @@ const floatingSourceChips = [
 
 const backgroundCards = [
   {
-    label: "Source mapped",
+    label: "Evidence mapped",
     icon: Search,
-    className: "right-5 top-2 sm:right-8",
+    className: "right-5 top-1 sm:right-8",
     tone: "bg-studio-sage/25",
     motion: { x: [0, 4, 0], y: [0, -6, 0] },
     delay: 0
   },
   {
-    label: "Citation checked",
+    label: "Citation ready",
     icon: CheckCircle2,
-    className: "bottom-2 left-3 sm:left-7",
+    className: "bottom-1 left-3 sm:left-7",
     tone: "bg-studio-violet/25",
     motion: { x: [0, -4, 0], y: [0, 5, 0] },
     delay: 0.3
   },
   {
-    label: "Trend signal",
+    label: "Trend checked",
     icon: Sparkles,
     className: "bottom-3 right-7",
     tone: "bg-studio-coral/25",
@@ -258,19 +258,19 @@ export function AnimatedResearchDemo() {
   return (
     <section
       aria-label="Live dossier preview animation showing a sample research workflow"
-      className="relative mx-auto w-full max-w-[580px] px-2 py-6 [perspective:1200px] sm:px-4 sm:py-8"
+      className="relative mx-auto w-full max-w-[520px] px-1 py-5 [perspective:1200px] sm:px-3 sm:py-6"
       onPointerMove={handlePointerMove}
       onPointerLeave={handlePointerLeave}
     >
       <motion.div
         className="relative"
         animate={
-          shouldReduceMotion ? { y: 0, rotate: 0 } : { y: [0, -8, 0], rotate: [0, 0.4, 0] }
+          shouldReduceMotion ? { y: 0, rotate: 0 } : { y: [0, -6, 0], rotate: [0, 0.3, 0] }
         }
         transition={
           shouldReduceMotion
             ? { duration: 0.2 }
-            : { duration: 6, repeat: Infinity, ease: "easeInOut" }
+            : { duration: 7, repeat: Infinity, ease: "easeInOut" }
         }
         style={{
           rotateX: shouldReduceMotion ? 0 : rotateX,
@@ -306,7 +306,7 @@ export function AnimatedResearchDemo() {
 
         <motion.div
           aria-hidden="true"
-          className="absolute inset-x-5 top-9 z-0 h-[calc(100%-4rem)] rounded-lg border border-studio-ink/10 bg-studio-clay/55 shadow-soft"
+          className="absolute inset-x-5 top-8 z-0 h-[calc(100%-3.5rem)] rounded-lg border border-studio-coral/15 bg-[#FFD8C2]/25 shadow-soft"
           style={{
             x: shouldReduceMotion ? 0 : backX,
             y: shouldReduceMotion ? 0 : backY,
@@ -316,7 +316,7 @@ export function AnimatedResearchDemo() {
         />
         <motion.div
           aria-hidden="true"
-          className="absolute inset-x-3 top-7 z-0 h-[calc(100%-4rem)] rounded-lg border border-studio-violet/20 bg-studio-cream/55 shadow-soft"
+          className="absolute inset-x-3 top-6 z-0 h-[calc(100%-3.5rem)] rounded-lg border border-studio-violet/20 bg-studio-violet/15 shadow-soft"
           style={{
             x: shouldReduceMotion ? 0 : backX,
             y: shouldReduceMotion ? 0 : backY,
@@ -395,7 +395,7 @@ export function AnimatedResearchDemo() {
 
         <motion.div
           aria-hidden="true"
-          className="relative z-20 overflow-hidden rounded-lg border border-studio-ink/10 bg-studio-cream/70 p-4 shadow-soft backdrop-blur-xl sm:p-5"
+          className="relative z-20 overflow-hidden rounded-lg border border-studio-ink/10 bg-studio-cream/70 p-3.5 shadow-soft backdrop-blur-xl sm:p-4"
           style={{
             x: shouldReduceMotion ? 0 : frontX,
             y: shouldReduceMotion ? 0 : frontY,
@@ -404,12 +404,12 @@ export function AnimatedResearchDemo() {
         >
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_10%_0%,rgba(255,122,89,.16),transparent_18rem),radial-gradient(circle_at_90%_10%,rgba(182,140,255,.14),transparent_18rem)]" />
           <div className="relative">
-            <div className="mb-4 flex items-center justify-between gap-3">
-              <div className="inline-flex items-center gap-2 rounded-lg border border-studio-ink/10 bg-studio-cream/80 px-3 py-2 text-xs font-bold uppercase tracking-[0.14em] text-studio-graphite shadow-soft">
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <div className="inline-flex items-center gap-2 rounded-lg border border-studio-ink/10 bg-studio-cream/80 px-2.5 py-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-studio-graphite shadow-soft">
                 <Sparkles className="h-3.5 w-3.5 text-studio-coral" aria-hidden="true" />
                 Live Dossier Preview
               </div>
-              <span className="rounded-lg border border-studio-sage/40 bg-studio-sage/15 px-2.5 py-1 text-xs font-bold text-studio-graphite">
+              <span className="rounded-lg border border-studio-sage/40 bg-studio-sage/15 px-2.5 py-1 text-[11px] font-bold text-studio-graphite">
                 Fake demo
               </span>
             </div>
@@ -418,12 +418,12 @@ export function AnimatedResearchDemo() {
               initial={shouldReduceMotion ? false : { opacity: 0, y: 10 }}
               animate={queryVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
               transition={{ duration: 0.28, ease: "easeOut" }}
-              className="ml-auto max-w-[92%] rounded-lg border border-studio-coral/25 bg-studio-coral/15 px-3.5 py-3 text-sm font-semibold leading-6 text-studio-ink"
+              className="ml-auto max-w-[92%] rounded-lg border border-studio-coral/25 bg-studio-coral/15 px-3 py-2.5 text-[13px] font-semibold leading-6 text-studio-ink"
             >
               {prompt}
             </motion.div>
 
-            <div className="mt-4 grid gap-2 sm:grid-cols-2">
+            <div className="mt-3 grid gap-2 sm:grid-cols-2">
               {agents.map((agent, index) => {
                 const Icon = agent.icon;
                 const isVisible = visibleAgents > index;
@@ -436,9 +436,9 @@ export function AnimatedResearchDemo() {
                     initial={shouldReduceMotion ? false : { opacity: 0, y: 8 }}
                     animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 8 }}
                     transition={{ duration: 0.22, ease: "easeOut" }}
-                    className="flex min-h-11 items-center gap-2 rounded-lg border border-studio-ink/10 bg-studio-cream/75 px-3 py-2 text-xs font-bold text-studio-graphite shadow-soft"
+                    className="flex min-h-10 items-center gap-2 rounded-lg border border-studio-ink/10 bg-studio-cream/75 px-2.5 py-2 text-[11px] font-bold text-studio-graphite shadow-soft"
                   >
-                    <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${agent.tone}`}>
+                    <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-lg ${agent.tone}`}>
                       <Icon className="h-3.5 w-3.5" aria-hidden="true" />
                     </span>
                     <span className="min-w-0 flex-1 leading-5">{agent.label}</span>
@@ -465,23 +465,23 @@ export function AnimatedResearchDemo() {
                   : { opacity: 0, y: 18, scale: 0.98 }
               }
               transition={{ duration: 0.34, ease: "easeOut" }}
-              className="mt-4 rounded-lg border border-studio-ink/10 bg-studio-cream/90 p-4 text-studio-graphite shadow-soft"
+              className="mt-3 rounded-lg border border-studio-ink/10 bg-studio-cream/90 p-3.5 text-studio-graphite shadow-soft"
             >
-              <div className="mb-3 flex items-center justify-between gap-3 border-b border-studio-ink/10 pb-3">
+              <div className="mb-2.5 flex items-center justify-between gap-3 border-b border-studio-ink/10 pb-2.5">
                 <div className="flex items-center gap-2">
-                  <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-studio-amber/70">
+                  <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-studio-amber/70">
                     <FileText className="h-4 w-4 text-studio-ink" aria-hidden="true" />
                   </span>
                   <div>
                     <p className="text-xs font-bold uppercase tracking-[0.14em] text-studio-graphite/60">
                       Research report
                     </p>
-                    <p className="text-sm font-bold text-studio-ink">AI agents in internships</p>
+                    <p className="text-[13px] font-bold text-studio-ink">AI agents in internships</p>
                   </div>
                 </div>
               </div>
 
-              <div className="min-h-[228px] text-sm leading-6">
+              <div className="min-h-[202px] text-[13px] leading-6">
                 {typedLines.map((line, index) => {
                   if (!line) {
                     return <div key={`space-${index}`} className="h-3" />;
@@ -492,7 +492,7 @@ export function AnimatedResearchDemo() {
                       key={`${line}-${index}`}
                       className={
                         isHeading(line)
-                          ? "mt-2 font-serif text-lg font-semibold leading-7 text-studio-ink"
+                          ? "mt-1.5 font-serif text-base font-semibold leading-7 text-studio-ink"
                           : "mt-1 text-studio-graphite/78"
                       }
                     >
@@ -513,7 +513,7 @@ export function AnimatedResearchDemo() {
                 initial={shouldReduceMotion ? false : { opacity: 0, y: 8 }}
                 animate={citationsVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 8 }}
                 transition={{ duration: 0.24, ease: "easeOut" }}
-                className="mt-3 flex flex-wrap gap-2"
+                className="mt-2.5 flex flex-wrap gap-2"
               >
                 {citations.map((citation, index) => (
                   <motion.span
@@ -525,7 +525,7 @@ export function AnimatedResearchDemo() {
                       delay: shouldReduceMotion ? 0 : index * 0.1,
                       ease: "easeOut"
                     }}
-                    className={`rounded-lg border border-studio-ink/10 px-2.5 py-1 text-xs font-bold text-studio-ink ${
+                    className={`rounded-lg border border-studio-ink/10 px-2.5 py-1 text-[11px] font-bold text-studio-ink ${
                       index === 0
                         ? "bg-studio-sage/30"
                         : index === 1
@@ -539,8 +539,8 @@ export function AnimatedResearchDemo() {
               </motion.div>
             </motion.div>
 
-            <div className="mt-3 flex items-center justify-between gap-3 rounded-lg border border-studio-ink/10 bg-studio-cream/70 px-3 py-2 text-xs font-bold text-studio-graphite shadow-soft">
-              <span>3 agents complete · synthesis ready</span>
+            <div className="mt-2.5 flex items-center justify-between gap-3 rounded-lg border border-studio-ink/10 bg-studio-cream/70 px-3 py-2 text-[11px] font-bold text-studio-graphite shadow-soft">
+              <span>3 agents complete &middot; synthesis ready</span>
               <span className="h-2 w-2 rounded-full bg-studio-sage" />
             </div>
           </div>

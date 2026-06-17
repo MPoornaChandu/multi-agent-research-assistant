@@ -34,6 +34,13 @@
   --hero-start: rgba(255, 253, 248, 0.9);
   --hero-mid: rgba(247, 241, 232, 0.54);
   --hero-end: rgba(239, 231, 218, 0.78);
+  --hero-paper-dot: rgba(31, 31, 31, 0.045);
+  --hero-paper-line: rgba(255, 122, 89, 0.026);
+  --hero-blob-peach: rgba(255, 216, 194, 0.3);
+  --hero-blob-violet: rgba(182, 140, 255, 0.15);
+  --hero-blob-amber: rgba(245, 184, 75, 0.15);
+  --hero-blob-sage: rgba(156, 175, 136, 0.1);
+  --hero-moon-cutout: #fffdf8;
   --shadow-soft: 0 24px 60px rgba(58, 52, 46, 0.12);
   --shadow-lift: 0 18px 34px rgba(58, 52, 46, 0.16);
   --scrollbar-track: rgba(239, 231, 218, 0.8);
@@ -71,6 +78,13 @@
   --hero-start: rgba(21, 18, 15, 0.95);
   --hero-mid: rgba(39, 35, 31, 0.72);
   --hero-end: rgba(45, 39, 34, 0.86);
+  --hero-paper-dot: rgba(255, 247, 237, 0.045);
+  --hero-paper-line: rgba(255, 143, 114, 0.035);
+  --hero-blob-peach: rgba(255, 143, 114, 0.1);
+  --hero-blob-violet: rgba(199, 165, 255, 0.09);
+  --hero-blob-amber: rgba(246, 196, 104, 0.08);
+  --hero-blob-sage: rgba(183, 202, 163, 0.07);
+  --hero-moon-cutout: #15120f;
   --shadow-soft: 0 24px 60px rgba(0, 0, 0, 0.32);
   --shadow-lift: 0 18px 34px rgba(0, 0, 0, 0.36);
   --scrollbar-track: rgba(39, 35, 31, 0.82);

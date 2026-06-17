@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import {
   ArrowRight,
   BriefcaseBusiness,
@@ -86,7 +86,94 @@ const sectionVariants = {
   visible: { opacity: 1, y: 0 }
 };
 
+function HeroDecorations({
+  shouldReduceMotion
+}: {
+  shouldReduceMotion: boolean;
+}) {
+  const floatTransition = shouldReduceMotion
+    ? { duration: 0.2 }
+    : { duration: 8, repeat: Infinity, ease: "easeInOut" as const };
+
+  return (
+    <div
+      aria-hidden="true"
+      className="pointer-events-none absolute inset-0 overflow-hidden"
+    >
+      <div className="absolute inset-0 bg-[linear-gradient(120deg,var(--hero-start),var(--hero-mid)_48%,var(--hero-end))]" />
+      <div
+        className="absolute inset-0 opacity-70"
+        style={{
+          backgroundImage:
+            "radial-gradient(circle at 1px 1px, var(--hero-paper-dot) 1px, transparent 0), linear-gradient(var(--hero-paper-line) 1px, transparent 1px), linear-gradient(90deg, var(--hero-paper-line) 1px, transparent 1px)",
+          backgroundPosition: "0 0, 0 0, 0 0",
+          backgroundSize: "22px 22px, 96px 96px, 96px 96px"
+        }}
+      />
+
+      <div className="absolute left-[-8%] top-[18%] h-72 w-72 rounded-full bg-[var(--hero-blob-peach)] blur-3xl" />
+      <div className="absolute right-[8%] top-[16%] h-80 w-80 rounded-full bg-[var(--hero-blob-violet)] blur-3xl" />
+      <div className="absolute bottom-[8%] left-[35%] h-64 w-64 rounded-full bg-[var(--hero-blob-amber)] blur-3xl" />
+      <div className="absolute bottom-[-18%] right-[-8%] h-72 w-72 rounded-full bg-[var(--hero-blob-sage)] blur-3xl" />
+
+      {[
+        "left-[8%] top-[22%]",
+        "right-[18%] top-[14%]",
+        "left-[47%] top-[62%]",
+        "right-[9%] bottom-[22%]"
+      ].map((className, index) => (
+        <motion.div
+          key={className}
+          className={`absolute ${className} hidden text-studio-coral/35 sm:block`}
+          animate={
+            shouldReduceMotion
+              ? { opacity: 0.35 }
+              : { opacity: [0.18, 0.42, 0.18], y: [0, -5, 0] }
+          }
+          transition={{ ...floatTransition, delay: index * 0.35 }}
+        >
+          <Sparkles className="h-5 w-5" aria-hidden="true" />
+        </motion.div>
+      ))}
+
+      {[
+        {
+          className: "left-[5%] top-[12%] h-16 w-16 bg-studio-amber/20",
+          cutout: "-right-3 top-0 h-16 w-16"
+        },
+        {
+          className: "right-[33%] top-[28%] hidden h-12 w-12 bg-studio-coral/15 md:block",
+          cutout: "-right-2 top-0 h-12 w-12"
+        },
+        {
+          className: "bottom-[18%] left-[24%] h-10 w-10 bg-studio-violet/15",
+          cutout: "-right-2 top-0 h-10 w-10"
+        }
+      ].map((moon, index) => (
+        <motion.div
+          key={moon.className}
+          className={`absolute rounded-full ${moon.className}`}
+          animate={
+            shouldReduceMotion
+              ? { y: 0, rotate: 0 }
+              : { y: [0, index % 2 ? -4 : 4, 0], rotate: [0, 4, 0] }
+          }
+          transition={{ ...floatTransition, delay: index * 0.45 }}
+        >
+          <div className={`absolute rounded-full bg-[var(--hero-moon-cutout)] ${moon.cutout}`} />
+        </motion.div>
+      ))}
+
+      <div className="absolute left-[13%] top-[48%] hidden h-1.5 w-1.5 rounded-full bg-studio-amber/45 sm:block" />
+      <div className="absolute right-[42%] top-[19%] hidden h-1 w-10 rotate-[-18deg] rounded-full bg-studio-coral/20 md:block" />
+      <div className="absolute bottom-[26%] right-[18%] hidden h-1 w-12 rotate-[21deg] rounded-full bg-studio-sage/25 lg:block" />
+    </div>
+  );
+}
+
 export default function HomePage() {
+  const shouldReduceMotion = Boolean(useReducedMotion());
+
   return (
     <main className="paper-grid min-h-screen overflow-hidden text-studio-ink">
       <header className="sticky top-0 z-30 border-b border-studio-ink/10 bg-studio-cream/80 backdrop-blur-xl">
@@ -122,10 +209,10 @@ export default function HomePage() {
         </nav>
       </header>
 
-      <section className="relative min-h-[78vh] px-5 pb-14 pt-16 md:px-8 md:pt-24">
-        <div className="absolute inset-x-0 top-0 h-full bg-[linear-gradient(120deg,var(--hero-start),var(--hero-mid)_48%,var(--hero-end))]" />
+      <section className="relative min-h-[78vh] overflow-hidden px-5 pb-14 pt-16 md:px-8 md:pt-24">
+        <HeroDecorations shouldReduceMotion={shouldReduceMotion} />
 
-        <div className="relative mx-auto grid max-w-7xl gap-10 lg:grid-cols-[minmax(0,0.95fr)_minmax(420px,0.78fr)] lg:items-center">
+        <div className="relative z-10 mx-auto grid max-w-7xl gap-10 lg:grid-cols-[minmax(0,0.98fr)_minmax(390px,0.66fr)] lg:items-center">
           <motion.div
             initial="hidden"
             animate="visible"
