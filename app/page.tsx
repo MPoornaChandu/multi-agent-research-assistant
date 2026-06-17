@@ -17,8 +17,8 @@ import {
   Sparkles,
   Zap
 } from "lucide-react";
+import { AnimatedResearchDemo } from "@/components/AnimatedResearchDemo";
 import { FloatingCards } from "@/components/FloatingCards";
-import { ResearchOrb } from "@/components/ResearchOrb";
 import { StatusPill } from "@/components/StatusPill";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
@@ -124,11 +124,8 @@ export default function HomePage() {
 
       <section className="relative min-h-[78vh] px-5 pb-14 pt-16 md:px-8 md:pt-24">
         <div className="absolute inset-x-0 top-0 h-full bg-[linear-gradient(120deg,var(--hero-start),var(--hero-mid)_48%,var(--hero-end))]" />
-        <div className="absolute right-0 top-16 hidden w-[50%] lg:block">
-          <ResearchOrb />
-        </div>
 
-        <div className="relative mx-auto grid max-w-7xl gap-10 lg:grid-cols-[minmax(0,0.98fr)_minmax(360px,0.72fr)] lg:items-center">
+        <div className="relative mx-auto grid max-w-7xl gap-10 lg:grid-cols-[minmax(0,0.95fr)_minmax(420px,0.78fr)] lg:items-center">
           <motion.div
             initial="hidden"
             animate="visible"
@@ -189,9 +186,13 @@ export default function HomePage() {
             </div>
           </motion.div>
 
-          <div className="relative block lg:hidden">
-            <ResearchOrb />
-          </div>
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.55, delay: 0.15, ease: "easeOut" }}
+          >
+            <AnimatedResearchDemo />
+          </motion.div>
         </div>
       </section>
 
