@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900" role="img" aria-label="Multi-Agent Research Assistant preview">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#FFFDF8"/>
+      <stop offset="0.55" stop-color="#F7F1E8"/>
+      <stop offset="1" stop-color="#EFE7DA"/>
+    </linearGradient>
+    <pattern id="grid" width="44" height="44" patternUnits="userSpaceOnUse">
+      <path d="M44 0H0V44" fill="none" stroke="#1F1F1F" stroke-opacity="0.06"/>
+    </pattern>
+  </defs>
+  <rect width="1440" height="900" fill="url(#bg)"/>
+  <rect width="1440" height="900" fill="url(#grid)"/>
+  <circle cx="120" cy="110" r="260" fill="#FF7A59" opacity="0.11"/>
+  <circle cx="1200" cy="130" r="300" fill="#B68CFF" opacity="0.13"/>
+  <rect x="92" y="64" width="1256" height="84" rx="18" fill="#FFFDF8" opacity="0.82" stroke="#1F1F1F" stroke-opacity="0.08"/>
+  <rect x="126" y="88" width="36" height="36" rx="9" fill="#1F1F1F"/>
+  <text x="178" y="113" fill="#1F1F1F" font-family="Georgia, serif" font-size="24" font-weight="700">Multi-Agent Research Assistant</text>
+  <rect x="1088" y="86" width="116" height="40" rx="10" fill="#FFFDF8" stroke="#1F1F1F" stroke-opacity="0.1"/>
+  <text x="1112" y="112" fill="#3A342E" font-family="Segoe UI, sans-serif" font-size="15" font-weight="700">System mode</text>
+  <rect x="1216" y="86" width="98" height="40" rx="10" fill="#1F1F1F"/>
+  <text x="1238" y="112" fill="#FFFDF8" font-family="Segoe UI, sans-serif" font-size="15" font-weight="700">GitHub</text>
+  <text x="118" y="248" fill="#FF7A59" font-family="Segoe UI, sans-serif" font-size="18" font-weight="800" letter-spacing="2">RESEARCH STUDIO / KNOWLEDGE LAB</text>
+  <text x="118" y="336" fill="#1F1F1F" font-family="Georgia, serif" font-size="76" font-weight="700">Multi-Agent Research Studio</text>
+  <text x="122" y="394" fill="#3A342E" font-family="Segoe UI, sans-serif" font-size="24">Supervisor, parallel researchers, router, and synthesis agent stream a cited dossier live.</text>
+  <rect x="120" y="444" width="172" height="54" rx="12" fill="#1F1F1F"/>
+  <text x="152" y="479" fill="#FFFDF8" font-family="Segoe UI, sans-serif" font-size="18" font-weight="700">Start Research</text>
+  <rect x="312" y="444" width="214" height="54" rx="12" fill="#FFFDF8" stroke="#1F1F1F" stroke-opacity="0.1"/>
+  <text x="342" y="479" fill="#3A342E" font-family="Segoe UI, sans-serif" font-size="18" font-weight="700">Prefill sample topic</text>
+  <rect x="118" y="568" width="352" height="168" rx="14" fill="#FFFDF8" opacity="0.78" stroke="#1F1F1F" stroke-opacity="0.08"/>
+  <text x="150" y="622" fill="#1F1F1F" font-family="Georgia, serif" font-size="52" font-weight="700">3</text>
+  <text x="150" y="662" fill="#3A342E" font-family="Segoe UI, sans-serif" font-size="20" font-weight="700">parallel researchers</text>
+  <rect x="506" y="568" width="352" height="168" rx="14" fill="#FFFDF8" opacity="0.78" stroke="#1F1F1F" stroke-opacity="0.08"/>
+  <text x="538" y="622" fill="#1F1F1F" font-family="Georgia, serif" font-size="52" font-weight="700">SSE</text>
+  <text x="538" y="662" fill="#3A342E" font-family="Segoe UI, sans-serif" font-size="20" font-weight="700">streamed timeline</text>
+  <rect x="896" y="228" width="360" height="420" rx="18" fill="#FFFDF8" opacity="0.78" stroke="#1F1F1F" stroke-opacity="0.08"/>
+  <rect x="948" y="300" width="160" height="80" rx="14" fill="#F5B84B"/>
+  <rect x="1080" y="222" width="160" height="80" rx="14" fill="#9CAF88"/>
+  <rect x="1120" y="410" width="160" height="80" rx="14" fill="#B68CFF"/>
+  <rect x="994" y="520" width="160" height="80" rx="14" fill="#FF7A59"/>
+  <path d="M1028 380L1160 302M1028 380L1200 410M1028 380L1074 520M1160 302L1200 410M1074 520L1200 410" fill="none" stroke="#3A342E" stroke-opacity="0.4" stroke-width="5"/>
+  <rect x="1162" y="392" width="132" height="80" rx="14" fill="#1F1F1F"/>
+  <text x="990" y="350" fill="#1F1F1F" font-family="Segoe UI, sans-serif" font-size="24" font-weight="800">Plan</text>
+  <text x="1146" y="272" fill="#1F1F1F" font-family="Segoe UI, sans-serif" font-size="24" font-weight="800">A</text>
+  <text x="1186" y="460" fill="#1F1F1F" font-family="Segoe UI, sans-serif" font-size="24" font-weight="800">B</text>
+  <text x="1058" y="570" fill="#1F1F1F" font-family="Segoe UI, sans-serif" font-size="24" font-weight="800">C</text>
+  <text x="1188" y="442" fill="#FFFDF8" font-family="Segoe UI, sans-serif" font-size="24" font-weight="800">Report</text>
+</svg>

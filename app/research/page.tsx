@@ -16,6 +16,7 @@ import { AgentTimeline } from "@/components/AgentTimeline";
 import { ReportViewer } from "@/components/ReportViewer";
 import { SourceCard } from "@/components/SourceCard";
 import { StatusPill } from "@/components/StatusPill";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { TopicInput } from "@/components/TopicInput";
 import type { Source, TimelineEvent } from "@/lib/types";
 import { validateTopic } from "@/lib/validation";
@@ -37,17 +38,11 @@ type EnvStatus = {
   development: boolean;
 };
 
-const LOCAL_API_KEY_HELP_MESSAGE = `Your API key is not being detected by the local Next.js server.
-
-Check:
-1. .env.local is in the same folder as package.json
-2. Variable names are GOOGLE_API_KEY and TAVILY_API_KEY
-3. No spaces around =
-4. Restart the dev server after editing .env.local
-
-Run:
-Ctrl + C
-npm run dev`;
+const IS_PRODUCTION = process.env.NODE_ENV === "production";
+const LOCAL_API_KEY_HELP_MESSAGE =
+  "Your API key is not being detected by the local Next.js server. Check .env.local, variable names, and restart npm run dev.";
+const PRODUCTION_RESEARCH_UNAVAILABLE_MESSAGE =
+  "Research is temporarily unavailable. Please try again in a few minutes.";
 const GEMINI_MODEL_HELP_MESSAGE =
   "Gemini model not available. The project is now configured to use gemini-2.5-flash-lite. Restart the dev server after updating .env.local.";
 
@@ -129,6 +124,19 @@ function isGeminiModelError(message: string) {
 }
 
 function friendlyErrorMessage(message: string) {
+  if (IS_PRODUCTION) {
+    if (
+      isApiKeyError(message) ||
+      isGeminiModelError(message) ||
+      message.includes("Research request failed") ||
+      message.includes("server did not return")
+    ) {
+      return PRODUCTION_RESEARCH_UNAVAILABLE_MESSAGE;
+    }
+
+    return message;
+  }
+
   if (isApiKeyError(message)) {
     return LOCAL_API_KEY_HELP_MESSAGE;
   }
@@ -191,13 +199,20 @@ export default function ResearchPage() {
         setEnvStatus(status);
 
         if (!status.googleApiKeyConfigured || !status.tavilyApiKeyConfigured) {
-          setError(LOCAL_API_KEY_HELP_MESSAGE);
+          setError(
+            IS_PRODUCTION
+              ? PRODUCTION_RESEARCH_UNAVAILABLE_MESSAGE
+              : LOCAL_API_KEY_HELP_MESSAGE
+          );
           setRunStatus("failed");
           return;
         }
 
         setError((current) =>
-          current?.startsWith("Your API key") ? null : current
+          current === LOCAL_API_KEY_HELP_MESSAGE ||
+          current === PRODUCTION_RESEARCH_UNAVAILABLE_MESSAGE
+            ? null
+            : current
         );
         setRunStatus((current) => (current === "failed" ? "idle" : current));
       } catch {
@@ -550,15 +565,27 @@ export default function ResearchPage() {
             </p>
           </div>
 
-          <div className="clay-card flex items-center gap-3 p-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-studio-violet/40">
-              <RadioTower className="h-5 w-5 text-studio-ink" aria-hidden="true" />
-            </div>
-            <div>
-              <StatusPill status={runStatus} label={statusLabel} />
-              <p className="mt-1 max-w-xs text-xs font-medium leading-5 text-studio-graphite/70">
-                {statusDescription}
-              </p>
+          <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-start">
+            <ThemeToggle />
+            <div className="clay-card flex items-start gap-3 p-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-studio-violet/40">
+                <RadioTower className="h-5 w-5 text-studio-ink" aria-hidden="true" />
+              </div>
+              <div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <StatusPill status={runStatus} label={statusLabel} />
+                  {envStatus ? (
+                    <span className="inline-flex rounded-lg border border-studio-ink/10 bg-studio-cream/70 px-2.5 py-1 text-xs font-semibold text-studio-graphite">
+                      {envStatus.fastMode
+                        ? "Fast Mode — templated planning, single synthesis call"
+                        : "Full Agent Mode — Gemini at every stage"}
+                    </span>
+                  ) : null}
+                </div>
+                <p className="mt-1 max-w-xs text-xs font-medium leading-5 text-studio-graphite/70">
+                  {statusDescription}
+                </p>
+              </div>
             </div>
           </div>
         </header>

@@ -1,6 +1,7 @@
 "use client";
 
 import { memo } from "react";
+import { useReducedMotion } from "framer-motion";
 import {
   CheckCircle2,
   Clock3,
@@ -15,7 +16,13 @@ type AgentTimelineProps = {
   events: TimelineEvent[];
 };
 
-function StatusIcon({ status }: { status: TimelineEvent["status"] }) {
+function StatusIcon({
+  shouldReduceMotion,
+  status
+}: {
+  shouldReduceMotion: boolean;
+  status: TimelineEvent["status"];
+}) {
   if (status === "completed") {
     return (
       <span>
@@ -28,12 +35,19 @@ function StatusIcon({ status }: { status: TimelineEvent["status"] }) {
     return <XCircle className="h-5 w-5 text-studio-coral" aria-hidden="true" />;
   }
 
-  return <Loader2 className="h-5 w-5 animate-spin text-studio-amber" aria-hidden="true" />;
+  return (
+    <Loader2
+      className={`h-5 w-5 text-studio-amber ${shouldReduceMotion ? "" : "animate-spin"}`}
+      aria-hidden="true"
+    />
+  );
 }
 
 export const AgentTimeline = memo(function AgentTimeline({
   events
 }: AgentTimelineProps) {
+  const shouldReduceMotion = Boolean(useReducedMotion());
+
   return (
     <section className="mt-6">
       <div className="mb-3 flex items-center justify-between gap-3">
@@ -58,9 +72,16 @@ export const AgentTimeline = memo(function AgentTimeline({
               <div className="flex items-start gap-3">
                 <div className="relative mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-studio-ink/10 bg-studio-cream">
                   {event.status === "running" ? (
-                    <span className="absolute h-3 w-3 animate-ping rounded-full bg-studio-amber/55" />
+                    <span
+                      className={`absolute h-3 w-3 rounded-full bg-studio-amber/55 ${
+                        shouldReduceMotion ? "" : "animate-ping"
+                      }`}
+                    />
                   ) : null}
-                  <StatusIcon status={event.status} />
+                  <StatusIcon
+                    shouldReduceMotion={shouldReduceMotion}
+                    status={event.status}
+                  />
                 </div>
 
                 <div className="min-w-0 flex-1">

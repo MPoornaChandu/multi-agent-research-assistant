@@ -1,14 +1,13 @@
-import { dedupeAndRenumberSources } from "@/lib/sources";
-import type { Finding, ResearchState } from "@/lib/types";
+import type { ResearchState } from "@/lib/types";
 import { validateTopic } from "@/lib/validation";
-import { runResearcher } from "@/agents/researcher";
-import { runSupervisor } from "@/agents/supervisor";
-import { runSynthesizer } from "@/agents/synthesizer";
+import { runResearchGraph } from "@/agents/graph";
 import { getCachedResearch, setCachedResearch } from "@/lib/cache";
 import {
   getSafeEnvStatus,
   hasGoogleApiKey,
-  hasTavilyApiKey
+  hasTavilyApiKey,
+  LOCAL_API_KEY_NOT_DETECTED_MESSAGE,
+  PRODUCTION_RESEARCH_UNAVAILABLE_MESSAGE
 } from "@/lib/env";
 
 export const maxDuration = 60;
@@ -16,10 +15,11 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 const encoder = new TextEncoder();
-const API_KEY_NOT_DETECTED_MESSAGE =
-  "API key not detected. Make sure .env.local is in the same folder as package.json, variable names are correct, and restart npm run dev.";
+const API_KEY_NOT_DETECTED_MESSAGE = LOCAL_API_KEY_NOT_DETECTED_MESSAGE;
 const GEMINI_MODEL_NOT_AVAILABLE_MESSAGE =
   "Gemini model not available. The project is now configured to use gemini-2.5-flash-lite. Restart the dev server after updating .env.local.";
+const ALL_RESEARCHERS_FAILED_MESSAGE =
+  "All researcher agents failed. Check API keys and try again.";
 
 function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : "An unexpected error occurred.";
@@ -28,7 +28,8 @@ function errorMessage(error: unknown): string {
 function isMissingApiKeyMessage(message: string): boolean {
   return (
     message.includes("Missing GOOGLE_API_KEY") ||
-    message.includes("Missing TAVILY_API_KEY")
+    message.includes("Missing TAVILY_API_KEY") ||
+    message.includes(LOCAL_API_KEY_NOT_DETECTED_MESSAGE)
   );
 }
 
@@ -53,6 +54,10 @@ function isGeminiModelNotAvailableError(error: unknown): boolean {
 }
 
 function streamErrorMessage(error: unknown): string {
+  if (process.env.NODE_ENV === "production") {
+    return PRODUCTION_RESEARCH_UNAVAILABLE_MESSAGE;
+  }
+
   if (isMissingApiKeyError(error)) {
     return API_KEY_NOT_DETECTED_MESSAGE;
   }
@@ -65,9 +70,29 @@ function streamErrorMessage(error: unknown): string {
 }
 
 function displayAgentError(message: string): string {
+  if (process.env.NODE_ENV === "production") {
+    return PRODUCTION_RESEARCH_UNAVAILABLE_MESSAGE;
+  }
+
   return isGeminiModelNotAvailableMessage(message)
     ? GEMINI_MODEL_NOT_AVAILABLE_MESSAGE
     : message;
+}
+
+function displayResearchError(message: string): string {
+  if (process.env.NODE_ENV === "production") {
+    return PRODUCTION_RESEARCH_UNAVAILABLE_MESSAGE;
+  }
+
+  if (isMissingApiKeyMessage(message)) {
+    return API_KEY_NOT_DETECTED_MESSAGE;
+  }
+
+  if (isGeminiModelNotAvailableMessage(message)) {
+    return GEMINI_MODEL_NOT_AVAILABLE_MESSAGE;
+  }
+
+  return message;
 }
 
 function send(
@@ -161,7 +186,9 @@ export async function POST(request: Request) {
     }
 
     if (!hasGoogleApiKey() || !hasTavilyApiKey()) {
-      send(controller, "error", { message: API_KEY_NOT_DETECTED_MESSAGE });
+      send(controller, "error", {
+        message: displayResearchError(API_KEY_NOT_DETECTED_MESSAGE)
+      });
       send(controller, "done", { ok: false });
       return;
     }
@@ -201,143 +228,61 @@ export async function POST(request: Request) {
       message: "Research workflow started."
     });
 
-    const supervisorStart = Date.now();
-    await sendAndYield(controller, "agent_started", {
-      agent: "Supervisor Agent",
-      message: "Breaking the topic into 3 focused sub-questions."
+    const state: ResearchState = await runResearchGraph({
+      topic,
+      emit: (type, payload = {}) => sendAndYield(controller, type, payload),
+      formatAgentError: displayAgentError,
+      logDuration
     });
 
-    const subQuestions = await runSupervisor(topic);
-    const supervisorDuration = Date.now() - supervisorStart;
-    logDuration("Supervisor", supervisorDuration);
-    await sendAndYield(controller, "agent_completed", {
-      agent: "Supervisor Agent",
-      message: "Generated 3 focused sub-questions.",
-      durationMs: supervisorDuration
-    });
-    await sendAndYield(controller, "subquestions_ready", { subQuestions });
-
-    subQuestions.forEach((subQuestion, index) => {
-      send(controller, "agent_started", {
-        agent: `Researcher Agent ${index + 1}`,
-        message: subQuestion
-      });
-    });
-    await yieldToStream();
-
-    const findings = await Promise.all(
-      subQuestions.map(async (subQuestion, index): Promise<Finding> => {
-        const startedAt = Date.now();
-        const finding = await runResearcher(index + 1, subQuestion);
-        const researcherDuration = Date.now() - startedAt;
-        logDuration(`Researcher ${index + 1}`, researcherDuration);
-
-        if (finding.error) {
-          await sendAndYield(controller, "agent_failed", {
-            agent: `Researcher Agent ${index + 1}`,
-            message: displayAgentError(finding.error),
-            durationMs: researcherDuration
-          });
-        } else {
-          await sendAndYield(controller, "agent_completed", {
-            agent: `Researcher Agent ${index + 1}`,
-            message: `Found ${finding.sources.length} sources.`,
-            durationMs: researcherDuration
-          });
-        }
-
-        return finding;
-      })
-    );
-
-    const normalized = dedupeAndRenumberSources(findings);
-    await sendAndYield(controller, "sources_ready", { sources: normalized.sources });
-
-    const missingApiKeyFinding = normalized.findings.find(
+    const missingApiKeyFinding = state.findings.find(
       (finding) => finding.error && isMissingApiKeyMessage(finding.error)
     );
 
     if (missingApiKeyFinding) {
-      send(controller, "error", { message: API_KEY_NOT_DETECTED_MESSAGE });
+      send(controller, "error", {
+        message: displayResearchError(API_KEY_NOT_DETECTED_MESSAGE)
+      });
       send(controller, "done", { ok: false });
       return;
     }
 
-    const geminiModelFinding = normalized.findings.find(
+    const geminiModelFinding = state.findings.find(
       (finding) =>
         finding.error && isGeminiModelNotAvailableMessage(finding.error)
     );
 
     if (geminiModelFinding) {
-      send(controller, "error", { message: GEMINI_MODEL_NOT_AVAILABLE_MESSAGE });
-      send(controller, "done", { ok: false });
-      return;
-    }
-
-    const state: ResearchState = {
-      topic,
-      subQuestions,
-      findings: normalized.findings,
-      report: "",
-      sources: normalized.sources,
-      status: "research_completed",
-      error: null,
-      researchCompleted: true
-    };
-
-    const hasSuccess = normalized.findings.some((finding) => !finding.error);
-    if (!hasSuccess) {
-      const report = await runSynthesizer({
-        ...state,
-        status: "failed",
-        error: "All researcher agents failed."
-      });
-
-      send(controller, "agent_failed", {
-        agent: "Synthesis Agent",
-        message: "Synthesis skipped because all researchers failed."
-      });
-      send(controller, "report_ready", { report });
       send(controller, "error", {
-        message: "All researcher agents failed. Check API keys and try again."
+        message: displayResearchError(GEMINI_MODEL_NOT_AVAILABLE_MESSAGE)
       });
       send(controller, "done", { ok: false });
       return;
     }
 
-    await sendAndYield(controller, "synthesis_started", {
-      message: "Combining successful findings into a cited report."
-    });
-    const synthesisStart = Date.now();
-    await sendAndYield(controller, "agent_started", {
-      agent: "Synthesis Agent",
-      message: "Writing the structured markdown report."
-    });
+    const hasSuccess = state.findings.some((finding) => !finding.error);
+    if (!hasSuccess) {
+      send(controller, "report_ready", { report: state.report });
+      send(controller, "error", {
+        message: displayResearchError(ALL_RESEARCHERS_FAILED_MESSAGE)
+      });
+      send(controller, "done", { ok: false });
+      return;
+    }
 
-    const report = await runSynthesizer({
-      ...state,
-      status: "synthesis_running"
-    });
-    const synthesisDuration = Date.now() - synthesisStart;
     const totalDuration = Date.now() - workflowStart;
-    logDuration("Synthesis", synthesisDuration);
     logDuration("Total", totalDuration);
 
     setCachedResearch(topic, {
       topic,
-      subQuestions,
-      findings: normalized.findings,
-      sources: normalized.sources,
-      report,
+      subQuestions: state.subQuestions,
+      findings: state.findings,
+      sources: state.sources,
+      report: state.report,
       durationMs: totalDuration
     });
 
-    send(controller, "report_ready", { report });
-    send(controller, "agent_completed", {
-      agent: "Synthesis Agent",
-      message: "Completed the cited research report.",
-      durationMs: synthesisDuration
-    });
+    send(controller, "report_ready", { report: state.report });
     send(controller, "research_completed", {
       topic,
       durationMs: totalDuration

@@ -5,29 +5,34 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "lint": "next lint",
     "start": "next start",
+    "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@langchain/core": "0.3.75",
     "@langchain/google-genai": "0.2.16",
     "@langchain/langgraph": "0.2.74",
+    "@tavily/core": "0.5.0",
     "framer-motion": "11.18.2",
     "lucide-react": "0.468.0",
     "next": "14.2.35",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "react-markdown": "9.0.3",
-    "remark-gfm": "4.0.1",
-    "@tavily/core": "0.5.0"
+    "remark-gfm": "4.0.1"
   },
   "devDependencies": {
     "@types/node": "22.10.5",
     "@types/react": "18.3.18",
     "@types/react-dom": "18.3.5",
     "autoprefixer": "10.4.20",
+    "eslint": "8.57.1",
+    "eslint-config-next": "14.2.35",
     "postcss": "8.4.49",
     "tailwindcss": "3.4.17",
-    "typescript": "5.7.3"
+    "typescript": "5.7.3",
+    "vitest": "2.1.8"
   }
 }

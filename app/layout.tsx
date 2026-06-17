@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Fraunces, Inter } from "next/font/google";
+import Script from "next/script";
+import { ThemeProvider } from "@/components/ThemeProvider";
 import "./globals.css";
 
 const inter = Inter({
@@ -14,13 +16,34 @@ const fraunces = Fraunces({
   variable: "--font-serif"
 });
 
+const appUrl = "https://multi-agent-research-assistant-delta.vercel.app/";
+const title = "Multi-Agent Research Assistant";
+const description =
+  "A research studio that breaks topics into sub-questions, runs parallel web searches, and synthesizes cited reports.";
+const creator = "M. Poorna Chandu";
+const themeScript = `
+(() => {
+  try {
+    const key = "research-studio-theme";
+    const stored = window.localStorage.getItem(key);
+    const mode = stored === "light" || stored === "dark" || stored === "system" ? stored : "system";
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const resolved = mode === "system" ? (prefersDark ? "dark" : "light") : mode;
+    document.documentElement.dataset.theme = resolved;
+    document.documentElement.dataset.themeMode = mode;
+  } catch {
+    document.documentElement.dataset.theme = "light";
+    document.documentElement.dataset.themeMode = "system";
+  }
+})();
+`;
+
 export const metadata: Metadata = {
   title: {
-    default: "Multi-Agent Research Assistant",
+    default: title,
     template: "%s | Multi-Agent Research Assistant"
   },
-  description:
-    "A streaming Research Studio that breaks topics into sub-questions, runs parallel Tavily searches, and synthesizes cited markdown reports with Gemini.",
+  description,
   keywords: [
     "multi-agent research assistant",
     "Next.js 14",
@@ -31,27 +54,40 @@ export const metadata: Metadata = {
     "AI research tool",
     "streaming research app"
   ],
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
-  ),
+  metadataBase: new URL(appUrl),
+  alternates: {
+    canonical: "/"
+  },
   openGraph: {
-    title: "Multi-Agent Research Assistant",
-    description:
-      "A streaming Research Studio for parallel web research and cited Gemini synthesis.",
+    title,
+    description,
     url: "/",
-    siteName: "Multi-Agent Research Assistant",
+    siteName: title,
     type: "website",
-    locale: "en_US"
+    locale: "en_US",
+    images: [
+      {
+        url: "/opengraph-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Multi-Agent Research Assistant Open Graph preview"
+      }
+    ]
   },
   twitter: {
-    card: "summary",
-    title: "Multi-Agent Research Assistant",
-    description:
-      "Parallel Tavily research agents with streamed Gemini synthesis in Next.js 14."
+    card: "summary_large_image",
+    title,
+    description,
+    images: ["/opengraph-image.png"],
+    creator: "@MPoornaChandu"
   },
-  applicationName: "Multi-Agent Research Assistant",
-  authors: [{ name: "Multi-Agent Research Assistant" }],
-  creator: "Multi-Agent Research Assistant"
+  icons: {
+    icon: "/icon.svg"
+  },
+  applicationName: title,
+  authors: [{ name: creator }],
+  creator,
+  publisher: creator
 };
 
 export default function RootLayout({
@@ -60,11 +96,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <Script
+          id="theme-script"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{ __html: themeScript }}
+        />
+      </head>
       <body
         className={`${inter.variable} ${fraunces.variable} min-h-screen bg-[var(--background)] text-[var(--foreground)] antialiased`}
       >
-        {children}
+        <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
   );

@@ -1,0 +1,137 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import { Check, ChevronDown, Monitor, Moon, Sun } from "lucide-react";
+import { type ThemeMode, useTheme } from "@/components/ThemeProvider";
+
+const themeOptions: Array<{
+  value: ThemeMode;
+  label: string;
+  description: string;
+  icon: typeof Sun;
+}> = [
+  {
+    value: "light",
+    label: "Light mode",
+    description: "Warm cream research studio",
+    icon: Sun
+  },
+  {
+    value: "dark",
+    label: "Dark mode",
+    description: "Graphite and espresso studio",
+    icon: Moon
+  },
+  {
+    value: "system",
+    label: "System mode",
+    description: "Follow device preference",
+    icon: Monitor
+  }
+];
+
+type ThemeToggleProps = {
+  className?: string;
+};
+
+export function ThemeToggle({ className = "" }: ThemeToggleProps) {
+  const { mounted, setTheme, theme } = useTheme();
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const selectedTheme = mounted ? theme : "system";
+  const currentOption =
+    themeOptions.find((option) => option.value === selectedTheme) ??
+    themeOptions[2];
+  const CurrentIcon = currentOption.icon;
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    function handlePointerDown(event: PointerEvent) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setIsOpen(false);
+      }
+    }
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isOpen]);
+
+  return (
+    <div ref={containerRef} className={`relative ${className}`}>
+      <button
+        type="button"
+        aria-label="Choose color theme"
+        aria-expanded={isOpen}
+        aria-haspopup="menu"
+        onClick={() => setIsOpen((current) => !current)}
+        className="studio-button inline-flex h-10 items-center gap-2 bg-studio-cream px-3 text-sm font-semibold text-studio-graphite"
+      >
+        <CurrentIcon className="h-4 w-4 text-studio-coral" aria-hidden="true" />
+        <span className="hidden sm:inline">{currentOption.label}</span>
+        <ChevronDown
+          className={`h-4 w-4 transition ${isOpen ? "rotate-180" : ""}`}
+          aria-hidden="true"
+        />
+      </button>
+
+      {isOpen ? (
+        <div
+          role="menu"
+          aria-label="Theme options"
+          className="absolute right-0 z-50 mt-2 w-64 rounded-lg border border-studio-ink/10 bg-studio-cream p-2 text-studio-graphite shadow-lift"
+        >
+          {themeOptions.map((option) => {
+            const Icon = option.icon;
+            const isSelected = selectedTheme === option.value;
+
+            return (
+              <button
+                key={option.value}
+                type="button"
+                role="menuitemradio"
+                aria-checked={isSelected}
+                onClick={() => {
+                  setTheme(option.value);
+                  setIsOpen(false);
+                }}
+                className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition hover:bg-studio-clay focus:bg-studio-clay"
+              >
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-studio-clay">
+                  <Icon className="h-4 w-4 text-studio-coral" aria-hidden="true" />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-sm font-bold text-studio-ink">
+                    {option.label}
+                  </span>
+                  <span className="block text-xs font-medium leading-5 text-studio-graphite/70">
+                    {option.description}
+                  </span>
+                </span>
+                {isSelected ? (
+                  <Check className="h-4 w-4 text-studio-sage" aria-hidden="true" />
+                ) : null}
+              </button>
+            );
+          })}
+        </div>
+      ) : null}
+    </div>
+  );
+}

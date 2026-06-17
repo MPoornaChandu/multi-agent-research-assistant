@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { FileText, Quote, SearchCheck } from "lucide-react";
 
 const cards = [
@@ -28,6 +28,8 @@ const cards = [
 ];
 
 export function FloatingCards() {
+  const shouldReduceMotion = useReducedMotion();
+
   return (
     <div className="relative min-h-[270px] w-full [perspective:900px]" aria-hidden="true">
       {cards.map((card, index) => {
@@ -39,12 +41,16 @@ export function FloatingCards() {
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true, margin: "-80px" }}
-            animate={{ y: [0, index % 2 ? -8 : 8, 0] }}
-            transition={{
-              duration: 6 + index * 0.4,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
+            animate={shouldReduceMotion ? { y: 0 } : { y: [0, index % 2 ? -8 : 8, 0] }}
+            transition={
+              shouldReduceMotion
+                ? { duration: 0.2 }
+                : {
+                    duration: 6 + index * 0.4,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }
+            }
           >
             <div className={`mb-5 flex h-9 w-9 items-center justify-center rounded-lg ${card.accent}`}>
               <Icon className="h-4 w-4 text-studio-ink" aria-hidden="true" />

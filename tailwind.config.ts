@@ -12,20 +12,20 @@ const config: Config = {
     extend: {
       colors: {
         studio: {
-          paper: "#F7F1E8",
-          cream: "#FFFDF8",
-          clay: "#EFE7DA",
-          ink: "#1F1F1F",
-          graphite: "#3A342E",
-          coral: "#FF7A59",
-          violet: "#B68CFF",
-          sage: "#9CAF88",
-          amber: "#F5B84B"
+          paper: "rgb(var(--studio-paper) / <alpha-value>)",
+          cream: "rgb(var(--studio-cream) / <alpha-value>)",
+          clay: "rgb(var(--studio-clay) / <alpha-value>)",
+          ink: "rgb(var(--studio-ink) / <alpha-value>)",
+          graphite: "rgb(var(--studio-graphite) / <alpha-value>)",
+          coral: "rgb(var(--studio-coral) / <alpha-value>)",
+          violet: "rgb(var(--studio-violet) / <alpha-value>)",
+          sage: "rgb(var(--studio-sage) / <alpha-value>)",
+          amber: "rgb(var(--studio-amber) / <alpha-value>)"
         }
       },
       boxShadow: {
-        soft: "0 24px 60px rgba(58, 52, 46, 0.12)",
-        lift: "0 18px 34px rgba(58, 52, 46, 0.16)"
+        soft: "var(--shadow-soft)",
+        lift: "var(--shadow-lift)"
       },
       fontFamily: {
         sans: ["var(--font-sans)", "ui-sans-serif", "system-ui"],

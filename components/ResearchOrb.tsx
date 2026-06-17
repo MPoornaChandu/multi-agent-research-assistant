@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { FileSearch, GitBranch, Search, Sparkles } from "lucide-react";
 
 const nodes = [
@@ -12,14 +12,24 @@ const nodes = [
 ];
 
 export function ResearchOrb() {
+  const shouldReduceMotion = useReducedMotion();
+
   return (
     <div className="pointer-events-none relative h-[360px] w-full max-w-[620px] [perspective:1200px] sm:h-[440px]">
       <motion.div
         aria-hidden="true"
         className="absolute inset-x-[11%] top-[18%] h-[62%] rounded-lg border border-studio-ink/10 bg-studio-cream/55 shadow-soft"
-        animate={{ y: [0, -8, 0], rotateX: [58, 56, 58], rotateZ: [-9, -7, -9] }}
-        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-        style={{ transformStyle: "preserve-3d" }}
+        animate={
+          shouldReduceMotion
+            ? { opacity: 1 }
+            : { y: [0, -8, 0], rotateX: [58, 56, 58], rotateZ: [-9, -7, -9] }
+        }
+        transition={
+          shouldReduceMotion
+            ? { duration: 0.2 }
+            : { duration: 8, repeat: Infinity, ease: "easeInOut" }
+        }
+        style={{ transform: "rotateX(58deg) rotateZ(-9deg)", transformStyle: "preserve-3d" }}
       >
         <div className="absolute inset-5 rounded-lg border border-studio-ink/10 bg-[linear-gradient(135deg,rgba(255,122,89,.18),rgba(182,140,255,.16),rgba(156,175,136,.18))]" />
         <div className="absolute left-[18%] top-[18%] h-px w-[58%] bg-studio-ink/20" />
@@ -31,8 +41,16 @@ export function ResearchOrb() {
       <motion.div
         aria-hidden="true"
         className="absolute left-[22%] top-[28%] h-48 w-48 rounded-lg border border-studio-ink/10 bg-studio-cream/80 shadow-soft"
-        animate={{ y: [0, 10, 0], rotate: [-9, -5, -9] }}
-        transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+        animate={
+          shouldReduceMotion
+            ? { opacity: 1 }
+            : { y: [0, 10, 0], rotate: [-9, -5, -9] }
+        }
+        transition={
+          shouldReduceMotion
+            ? { duration: 0.2 }
+            : { duration: 7, repeat: Infinity, ease: "easeInOut" }
+        }
         style={{ transform: "rotateX(58deg) rotateZ(-10deg)", transformStyle: "preserve-3d" }}
       >
         <div className="absolute -right-4 top-4 h-full w-full rounded-lg border border-studio-ink/10 bg-studio-clay" />
@@ -52,12 +70,16 @@ export function ResearchOrb() {
             key={node.label}
             aria-hidden="true"
             className={`absolute ${node.className} flex min-w-28 items-center gap-2 rounded-lg border border-studio-ink/10 bg-studio-cream/90 px-3 py-2 text-xs font-bold text-studio-ink shadow-soft backdrop-blur`}
-            animate={{ y: [0, index % 2 ? 8 : -8, 0] }}
-            transition={{
-              duration: 5.5 + index * 0.35,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
+            animate={shouldReduceMotion ? { y: 0 } : { y: [0, index % 2 ? 8 : -8, 0] }}
+            transition={
+              shouldReduceMotion
+                ? { duration: 0.2 }
+                : {
+                    duration: 5.5 + index * 0.35,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }
+            }
           >
             <span className={`flex h-7 w-7 items-center justify-center rounded-lg ${node.tone}`}>
               <Icon className="h-3.5 w-3.5" aria-hidden="true" />

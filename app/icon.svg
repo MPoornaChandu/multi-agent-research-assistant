@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Multi-Agent Research Assistant icon">
+  <rect width="64" height="64" rx="14" fill="#1F1F1F"/>
+  <path d="M16 42V21.5C16 18.5 18.5 16 21.5 16H42C45.3 16 48 18.7 48 22V42.5C48 45.5 45.5 48 42.5 48H22C18.7 48 16 45.3 16 42Z" fill="#FFFDF8"/>
+  <path d="M22 24H38" stroke="#FF7A59" stroke-width="4" stroke-linecap="round"/>
+  <path d="M22 32H42" stroke="#B68CFF" stroke-width="4" stroke-linecap="round"/>
+  <path d="M22 40H33" stroke="#9CAF88" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="43" cy="23" r="5" fill="#F5B84B"/>
+</svg>

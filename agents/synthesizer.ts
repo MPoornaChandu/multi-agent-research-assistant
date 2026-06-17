@@ -3,18 +3,24 @@ import { dedupeAndRenumberSources, formatSourceList } from "@/lib/sources";
 import type { Finding, ResearchState } from "@/lib/types";
 
 function noFindingsReport(state: ResearchState): string {
-  const failureNotes = state.findings
-    .filter((finding) => finding.error)
-    .map(
-      (finding) =>
-        `- Researcher ${finding.researcherId}: ${finding.error ?? "Unknown error"}`
-    )
-    .join("\n");
+  const isProduction = process.env.NODE_ENV === "production";
+  const failureNotes = isProduction
+    ? "- Research is temporarily unavailable. Please try again in a few minutes."
+    : state.findings
+        .filter((finding) => finding.error)
+        .map(
+          (finding) =>
+            `- Researcher ${finding.researcherId}: ${finding.error ?? "Unknown error"}`
+        )
+        .join("\n");
+  const summary = isProduction
+    ? "The research workflow could not produce a complete report because the service is temporarily unavailable. Please try again in a few minutes."
+    : "The research workflow could not produce a complete report because every researcher failed. Check the API keys, provider limits, and network access, then try again.";
 
   return `## Research Report: ${state.topic}
 
 ### Executive Summary
-The research workflow could not produce a complete report because every researcher failed. Check the API keys, provider limits, and network access, then try again.
+${summary}
 
 ### Key Findings
 No successful findings were available.

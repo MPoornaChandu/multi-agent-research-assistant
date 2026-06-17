@@ -41,6 +41,7 @@ export function SourceCard({ source }: SourceCardProps) {
           target="_blank"
           rel="noopener noreferrer"
           className="studio-button inline-flex items-center gap-2 bg-studio-ink px-3 py-2 text-sm font-semibold text-studio-cream"
+          aria-label={`Open source ${source.id}: ${source.title}`}
         >
           <ExternalLink className="h-4 w-4" aria-hidden="true" />
           Open source
@@ -48,6 +49,7 @@ export function SourceCard({ source }: SourceCardProps) {
         <button
           type="button"
           onClick={() => setIsOpen((current) => !current)}
+          aria-expanded={isOpen}
           className="studio-button inline-flex items-center gap-2 bg-studio-cream px-3 py-2 text-sm font-semibold text-studio-graphite"
         >
           {isOpen ? (

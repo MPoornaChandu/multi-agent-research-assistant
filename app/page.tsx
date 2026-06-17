@@ -20,6 +20,7 @@ import {
 import { FloatingCards } from "@/components/FloatingCards";
 import { ResearchOrb } from "@/components/ResearchOrb";
 import { StatusPill } from "@/components/StatusPill";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const architecture = [
   {
@@ -99,19 +100,20 @@ export default function HomePage() {
             </span>
           </Link>
 
-          <div className="hidden items-center gap-2 md:flex">
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
             <Link
               href={SAMPLE_RESEARCH_HREF}
-              className="studio-button inline-flex h-10 items-center gap-2 bg-studio-cream px-3 text-sm font-semibold text-studio-graphite"
+              className="studio-button hidden h-10 items-center gap-2 bg-studio-cream px-3 text-sm font-semibold text-studio-graphite md:inline-flex"
             >
-              Try sample
+              Prefill sample
               <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </Link>
             <a
               href={PROJECT_GITHUB_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="studio-button inline-flex h-10 items-center gap-2 bg-studio-ink px-3 text-sm font-semibold text-studio-cream"
+              className="studio-button hidden h-10 items-center gap-2 bg-studio-ink px-3 text-sm font-semibold text-studio-cream md:inline-flex"
             >
               <Github className="h-4 w-4" aria-hidden="true" />
               View GitHub
@@ -121,7 +123,7 @@ export default function HomePage() {
       </header>
 
       <section className="relative min-h-[78vh] px-5 pb-14 pt-16 md:px-8 md:pt-24">
-        <div className="absolute inset-x-0 top-0 h-full bg-[linear-gradient(120deg,rgba(255,253,248,.9),rgba(247,241,232,.54)_48%,rgba(239,231,218,.78))]" />
+        <div className="absolute inset-x-0 top-0 h-full bg-[linear-gradient(120deg,var(--hero-start),var(--hero-mid)_48%,var(--hero-end))]" />
         <div className="absolute right-0 top-16 hidden w-[50%] lg:block">
           <ResearchOrb />
         </div>
@@ -159,7 +161,7 @@ export default function HomePage() {
                 href={SAMPLE_RESEARCH_HREF}
                 className="studio-button inline-flex h-12 items-center gap-2 bg-studio-cream px-5 text-sm font-semibold text-studio-graphite"
               >
-                Try sample research
+                Prefill sample topic
                 <Zap className="h-4 w-4" aria-hidden="true" />
               </Link>
               <a
@@ -264,7 +266,7 @@ export default function HomePage() {
                 href={SAMPLE_RESEARCH_HREF}
                 className="studio-button inline-flex h-11 items-center gap-2 bg-studio-coral px-4 text-sm font-bold text-studio-ink"
               >
-                Try sample research
+                Prefill sample topic
                 <Zap className="h-4 w-4" aria-hidden="true" />
               </Link>
             </div>
@@ -359,7 +361,7 @@ export default function HomePage() {
 
       <footer className="border-t border-studio-ink/10 px-5 py-8 md:px-8">
         <div className="mx-auto flex max-w-7xl flex-col gap-4 text-sm font-semibold text-studio-graphite/75 md:flex-row md:items-center md:justify-between">
-          <p>Built by M. Poorna Chandu</p>
+            <p>Built by M. Poorna Chandu</p>
           <div className="flex flex-wrap items-center gap-3">
             <a
               href={PROFILE_GITHUB_URL}
@@ -368,7 +370,7 @@ export default function HomePage() {
               className="inline-flex min-w-0 items-center gap-2 transition hover:text-studio-coral"
             >
               <Github className="h-4 w-4" aria-hidden="true" />
-              <span className="break-all">GitHub: {PROFILE_GITHUB_URL}</span>
+              <span>GitHub</span>
             </a>
             <a
               href={LINKEDIN_URL}
@@ -377,7 +379,16 @@ export default function HomePage() {
               className="inline-flex min-w-0 items-center gap-2 transition hover:text-studio-coral"
             >
               <Linkedin className="h-4 w-4" aria-hidden="true" />
-              <span className="break-all">LinkedIn: {LINKEDIN_URL}</span>
+              <span>LinkedIn</span>
+            </a>
+            <a
+              href={PROJECT_GITHUB_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex min-w-0 items-center gap-2 transition hover:text-studio-coral"
+            >
+              <Github className="h-4 w-4" aria-hidden="true" />
+              <span>Project repository</span>
             </a>
           </div>
         </div>

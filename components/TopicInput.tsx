@@ -64,11 +64,17 @@ export function TopicInput({
         </div>
       </div>
 
+      <label htmlFor="research-topic" className="sr-only">
+        Research topic
+      </label>
       <textarea
+        id="research-topic"
         value={topic}
         onChange={(event) => onTopicChange(event.target.value)}
         placeholder="Example: How are multi-agent AI systems changing software engineering work?"
         disabled={isRunning}
+        aria-describedby={error ? "research-topic-error" : undefined}
+        aria-invalid={Boolean(error)}
         className="min-h-40 w-full resize-none rounded-lg border border-studio-ink/10 bg-studio-cream/80 p-4 text-base leading-7 text-studio-ink placeholder:text-studio-graphite/40 shadow-inner shadow-studio-graphite/5 transition focus:border-studio-coral focus:ring-2 focus:ring-studio-coral/20 disabled:cursor-not-allowed disabled:opacity-70"
         maxLength={600}
       />
@@ -81,7 +87,10 @@ export function TopicInput({
       </div>
 
       {error ? (
-        <div className="mt-3 whitespace-pre-line rounded-lg border border-studio-coral/35 bg-studio-coral/15 px-3 py-2 text-sm font-medium leading-6 text-studio-graphite">
+        <div
+          id="research-topic-error"
+          className="mt-3 whitespace-pre-line rounded-lg border border-studio-coral/35 bg-studio-coral/15 px-3 py-2 text-sm font-medium leading-6 text-studio-graphite"
+        >
           {error}
           {showEnvCheckLink ? (
             <a

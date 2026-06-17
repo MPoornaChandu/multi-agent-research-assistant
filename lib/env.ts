@@ -14,7 +14,18 @@ type SafeEnvStatus = {
   development: boolean;
 };
 
+export const LOCAL_API_KEY_NOT_DETECTED_MESSAGE =
+  "Your API key is not being detected by the local Next.js server. Check .env.local, variable names, and restart npm run dev.";
+export const PRODUCTION_RESEARCH_UNAVAILABLE_MESSAGE =
+  "Research is temporarily unavailable. Please try again in a few minutes.";
+
 const loadedEnvFileValues = new Map<string, string>();
+
+export function getResearchUnavailableMessage(): string {
+  return process.env.NODE_ENV === "production"
+    ? PRODUCTION_RESEARCH_UNAVAILABLE_MESSAGE
+    : LOCAL_API_KEY_NOT_DETECTED_MESSAGE;
+}
 
 function cleanEnvValue(value?: string): string {
   if (!value) return "";
@@ -108,9 +119,7 @@ export function getGoogleApiKey(): string {
   );
 
   if (!value) {
-    throw new Error(
-      "Missing GOOGLE_API_KEY. Add a real value to .env.local before starting research."
-    );
+    throw new Error(getResearchUnavailableMessage());
   }
 
   return value;
@@ -120,9 +129,7 @@ export function getTavilyApiKey(): string {
   const value = firstConfiguredValue(envCandidates("TAVILY_API_KEY"));
 
   if (!value) {
-    throw new Error(
-      "Missing TAVILY_API_KEY. Add a real value to .env.local before starting research."
-    );
+    throw new Error(getResearchUnavailableMessage());
   }
 
   return value;
