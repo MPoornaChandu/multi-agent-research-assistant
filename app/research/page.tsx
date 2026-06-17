@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import {
   ArrowLeft,
+  Clock3,
   FileSearch,
   GitBranch,
   Home,
@@ -13,6 +14,7 @@ import {
   RotateCcw
 } from "lucide-react";
 import { AgentTimeline } from "@/components/AgentTimeline";
+import { CopyButton } from "@/components/CopyButton";
 import { ReportViewer } from "@/components/ReportViewer";
 import { SourceCard } from "@/components/SourceCard";
 import { StatusPill } from "@/components/StatusPill";
@@ -125,16 +127,7 @@ function isGeminiModelError(message: string) {
 
 function friendlyErrorMessage(message: string) {
   if (IS_PRODUCTION) {
-    if (
-      isApiKeyError(message) ||
-      isGeminiModelError(message) ||
-      message.includes("Research request failed") ||
-      message.includes("server did not return")
-    ) {
-      return PRODUCTION_RESEARCH_UNAVAILABLE_MESSAGE;
-    }
-
-    return message;
+    return PRODUCTION_RESEARCH_UNAVAILABLE_MESSAGE;
   }
 
   if (isApiKeyError(message)) {
@@ -154,6 +147,10 @@ export default function ResearchPage() {
   const [report, setReport] = useState("");
   const [sources, setSources] = useState<Source[]>([]);
   const [subQuestions, setSubQuestions] = useState<string[]>([]);
+  const [completedDurationMs, setCompletedDurationMs] = useState<number | null>(
+    null
+  );
+  const [lastRunCached, setLastRunCached] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
   const [runStatus, setRunStatus] = useState<RunStatus>("idle");
   const [error, setError] = useState<string | null>(null);
@@ -272,6 +269,8 @@ export default function ResearchPage() {
     setReport("");
     setSources([]);
     setSubQuestions([]);
+    setCompletedDurationMs(null);
+    setLastRunCached(false);
     setError(null);
     setRunStatus("idle");
     setIsRunning(false);
@@ -329,6 +328,7 @@ export default function ResearchPage() {
           );
           break;
         case "cache_hit":
+          setLastRunCached(true);
           addTimelineEvent(
             "Research Cache",
             "completed",
@@ -364,6 +364,8 @@ export default function ResearchPage() {
           break;
         case "research_completed":
           setRunStatus("completed");
+          setCompletedDurationMs(getNumber(payload, "durationMs") ?? null);
+          setLastRunCached(getBoolean(payload, "cached") ?? false);
           addTimelineEvent(
             "Research Workflow",
             "completed",
@@ -426,6 +428,8 @@ export default function ResearchPage() {
     setReport("");
     setSources([]);
     setSubQuestions([]);
+    setCompletedDurationMs(null);
+    setLastRunCached(false);
     setError(null);
     setRunStatus("running");
     setIsRunning(true);
@@ -494,9 +498,10 @@ export default function ResearchPage() {
         caughtError instanceof Error
           ? caughtError.message
           : "Unable to run the research workflow.";
-      setError(friendlyErrorMessage(message));
+      const safeMessage = friendlyErrorMessage(message);
+      setError(safeMessage);
       setRunStatus("failed");
-      addTimelineEvent("Research Workflow", "failed", message);
+      addTimelineEvent("Research Workflow", "failed", safeMessage);
     } finally {
       if (abortControllerRef.current === controller) {
         abortControllerRef.current = null;
@@ -538,6 +543,25 @@ export default function ResearchPage() {
     [sources]
   );
 
+  const sourcesCopyText = useMemo(
+    () =>
+      sources
+        .map(
+          (source) =>
+            `[${source.id}] ${source.title}\n${source.url}\n${source.snippet}`
+        )
+        .join("\n\n"),
+    [sources]
+  );
+
+  const modeLabel = useMemo(() => {
+    if (!envStatus) {
+      return "Mode checking";
+    }
+
+    return envStatus.fastMode ? "Fast Mode" : "Full Agent Mode";
+  }, [envStatus]);
+
   return (
     <main className="paper-grid min-h-screen px-5 py-6 text-studio-ink md:px-8">
       <div className="mx-auto max-w-7xl">
@@ -577,8 +601,8 @@ export default function ResearchPage() {
                   {envStatus ? (
                     <span className="inline-flex rounded-lg border border-studio-ink/10 bg-studio-cream/70 px-2.5 py-1 text-xs font-semibold text-studio-graphite">
                       {envStatus.fastMode
-                        ? "Fast Mode — templated planning, single synthesis call"
-                        : "Full Agent Mode — Gemini at every stage"}
+                        ? "Fast Mode - templated planning, single synthesis call"
+                        : "Full Agent Mode - Gemini at every stage"}
                     </span>
                   ) : null}
                 </div>
@@ -590,8 +614,8 @@ export default function ResearchPage() {
           </div>
         </header>
 
-        <div className="grid gap-8 lg:grid-cols-[420px_minmax(0,1fr)]">
-          <aside>
+        <div className="grid min-w-0 gap-8 lg:grid-cols-[420px_minmax(0,1fr)]">
+          <aside className="min-w-0">
             <TopicInput
               topic={topic}
               onTopicChange={setTopic}
@@ -617,7 +641,9 @@ export default function ResearchPage() {
                   {subQuestions.map((question, index) => (
                     <li key={question} className="flex gap-2">
                       <span className="font-bold text-studio-coral">{index + 1}.</span>
-                      <span>{question}</span>
+                      <span className="min-w-0 [overflow-wrap:anywhere]">
+                        {question}
+                      </span>
                     </li>
                   ))}
                 </ol>
@@ -627,7 +653,7 @@ export default function ResearchPage() {
             <AgentTimeline events={events} />
           </aside>
 
-          <div className="space-y-6">
+          <div className="min-w-0 space-y-6">
             <div className="clay-card flex flex-col gap-4 p-4 md:flex-row md:items-center md:justify-between">
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-studio-amber/70">
@@ -645,6 +671,7 @@ export default function ResearchPage() {
               <button
                 type="button"
                 onClick={clearWorkspace}
+                aria-label="Reset research workspace"
                 className="studio-button inline-flex h-10 items-center justify-center gap-2 bg-studio-cream px-3 text-sm font-semibold text-studio-graphite"
               >
                 <RotateCcw className="h-4 w-4" aria-hidden="true" />
@@ -652,25 +679,48 @@ export default function ResearchPage() {
               </button>
             </div>
 
-            <ReportViewer report={report} isRunning={isRunning} />
+            <ReportViewer
+              report={report}
+              isRunning={isRunning}
+              topic={topic}
+              sourceCount={sources.length}
+              modeLabel={modeLabel}
+              durationMs={completedDurationMs}
+              cached={lastRunCached}
+            />
 
             <section>
-              <div className="mb-3 flex items-center justify-between gap-3">
+              <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <h2 className="text-lg font-bold text-studio-ink">Sources</h2>
                   <p className="text-sm text-studio-graphite/70">
                     Tavily results normalized for citations.
                   </p>
                 </div>
-                <span className="inline-flex items-center gap-2 rounded-lg border border-studio-ink/10 bg-studio-cream/70 px-3 py-1 text-sm font-bold text-studio-graphite shadow-soft">
-                  <PanelRight className="h-4 w-4 text-studio-sage" aria-hidden="true" />
-                  {sources.length} found
-                </span>
+                <div className="flex flex-wrap items-center gap-2">
+                  {sources.length > 0 ? (
+                    <CopyButton
+                      text={sourcesCopyText}
+                      label="Copy sources"
+                      className="h-9 px-3 text-xs sm:h-10 sm:text-sm"
+                    />
+                  ) : null}
+                  <span className="inline-flex h-9 items-center gap-2 rounded-lg border border-studio-ink/10 bg-studio-cream/70 px-3 text-sm font-bold text-studio-graphite shadow-soft sm:h-10">
+                    <PanelRight className="h-4 w-4 text-studio-sage" aria-hidden="true" />
+                    {sources.length} found
+                  </span>
+                </div>
               </div>
 
               {sources.length === 0 ? (
                 <div className="clay-card p-5 text-sm leading-6 text-studio-graphite/70">
-                  Sources will appear as researchers complete their searches.
+                  <div className="flex items-center gap-2 font-bold text-studio-ink">
+                    <Clock3 className="h-4 w-4 text-studio-amber" aria-hidden="true" />
+                    Sources pending
+                  </div>
+                  <p className="mt-2">
+                    Source cards will appear as researchers complete their searches.
+                  </p>
                 </div>
               ) : (
                 <div className="grid gap-4 xl:grid-cols-2">{sourceCards}</div>

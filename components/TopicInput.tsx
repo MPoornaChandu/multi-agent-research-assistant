@@ -117,7 +117,7 @@ export function TopicInput({
             type="button"
             disabled={isRunning}
             onClick={() => onTopicChange(example)}
-            className="rounded-full border border-studio-ink/10 bg-studio-cream/75 px-4 py-2.5 text-left text-sm font-semibold leading-5 text-studio-graphite shadow-soft transition hover:border-studio-sage hover:bg-studio-sage/15 disabled:cursor-not-allowed disabled:opacity-60"
+            className="min-w-0 rounded-full border border-studio-ink/10 bg-studio-cream/75 px-4 py-2.5 text-left text-sm font-semibold leading-5 text-studio-graphite shadow-soft transition hover:border-studio-sage hover:bg-studio-sage/15 disabled:cursor-not-allowed disabled:opacity-60 [overflow-wrap:anywhere]"
           >
             {example}
           </button>

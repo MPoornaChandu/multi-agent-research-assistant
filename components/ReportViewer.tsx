@@ -3,15 +3,70 @@
 import { motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { FileText, Sparkles } from "lucide-react";
+import { Clock3, FileText, RadioTower, SearchCheck, Sparkles } from "lucide-react";
 import { CopyButton } from "@/components/CopyButton";
 
 type ReportViewerProps = {
   report: string;
   isRunning?: boolean;
+  topic?: string;
+  sourceCount?: number;
+  modeLabel?: string;
+  durationMs?: number | null;
+  cached?: boolean;
 };
 
-export function ReportViewer({ report, isRunning = false }: ReportViewerProps) {
+const previewRows = [
+  "Supervisor waiting",
+  "Researchers ready",
+  "Sources pending",
+  "Synthesis idle"
+];
+
+function formatDuration(durationMs?: number | null) {
+  if (typeof durationMs !== "number") {
+    return "Not reported";
+  }
+
+  if (durationMs < 1000) {
+    return `${durationMs} ms`;
+  }
+
+  return `${(durationMs / 1000).toFixed(durationMs < 10000 ? 1 : 0)} s`;
+}
+
+export function ReportViewer({
+  report,
+  isRunning = false,
+  topic = "",
+  sourceCount = 0,
+  modeLabel = "Mode checking",
+  durationMs = null,
+  cached = false
+}: ReportViewerProps) {
+  const summaryItems = [
+    {
+      label: "Topic",
+      value: topic || "Untitled run",
+      icon: Sparkles
+    },
+    {
+      label: "Sources",
+      value: `${sourceCount} source${sourceCount === 1 ? "" : "s"}`,
+      icon: SearchCheck
+    },
+    {
+      label: "Mode",
+      value: cached ? `${modeLabel} / cache hit` : modeLabel,
+      icon: RadioTower
+    },
+    {
+      label: "Duration",
+      value: formatDuration(durationMs),
+      icon: Clock3
+    }
+  ];
+
   return (
     <section className="clay-card p-5">
       <div className="mb-5 flex items-center justify-between gap-3">
@@ -26,64 +81,108 @@ export function ReportViewer({ report, isRunning = false }: ReportViewerProps) {
       </div>
 
       {!report ? (
-        <div className="flex min-h-96 items-center justify-center rounded-lg border border-dashed border-studio-ink/15 bg-studio-cream/55 p-8 text-center">
-          <div className="max-w-sm">
+        <div className="flex min-h-96 items-center justify-center rounded-lg border border-dashed border-studio-ink/15 bg-studio-cream/55 p-6 text-center sm:p-8">
+          <div className="max-w-lg">
             <Sparkles className="mx-auto mb-4 h-8 w-8 text-studio-amber" aria-hidden="true" />
             <p className="font-serif text-2xl font-semibold leading-tight text-studio-ink">
-              Your research dossier will appear here.
+              Your dossier will appear here.
             </p>
             <p className="mt-3 text-sm leading-6 text-studio-graphite/70">
               {isRunning
                 ? "The synthesis agent will render the report when the research team finishes."
-                : "Start a topic and watch the research team build it live."}
+                : "Start with a topic and watch the research team plan, search, route, and synthesize in real time."}
             </p>
+            <div className="mt-6 grid gap-2 text-left sm:grid-cols-2">
+              {previewRows.map((row, index) => (
+                <div
+                  key={row}
+                  className="flex items-center gap-2 rounded-lg border border-studio-ink/10 bg-studio-cream/70 px-3 py-2 text-xs font-bold text-studio-graphite shadow-soft"
+                >
+                  <span
+                    className={`h-2 w-2 rounded-full ${
+                      index === 0
+                        ? "bg-studio-amber"
+                        : index === 1
+                          ? "bg-studio-sage"
+                          : index === 2
+                            ? "bg-studio-violet"
+                            : "bg-studio-coral"
+                    }`}
+                  />
+                  {row}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       ) : (
-        <motion.article
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.32 }}
-          className="max-w-none text-studio-graphite [&_hr]:border-studio-ink/10 [&_li]:my-1 [&_ol]:my-4 [&_ol]:list-decimal [&_ol]:space-y-1 [&_ol]:pl-6 [&_p]:my-4 [&_p]:leading-7 [&_strong]:text-studio-ink [&_table]:my-5 [&_table]:w-full [&_table]:overflow-hidden [&_td]:border [&_td]:border-studio-ink/10 [&_td]:p-3 [&_th]:border [&_th]:border-studio-ink/10 [&_th]:bg-studio-clay/80 [&_th]:p-3 [&_ul]:my-4 [&_ul]:list-disc [&_ul]:space-y-1 [&_ul]:pl-6"
-        >
-          <ReactMarkdown
-            remarkPlugins={[remarkGfm]}
-            components={{
-              h2: ({ children }) => (
-                <h2 className="gradient-text mt-0 border-b border-studio-ink/10 pb-3 font-serif text-3xl font-semibold">
-                  {children}
-                </h2>
-              ),
-              h3: ({ children }) => (
-                <h3 className="mt-8 text-xl font-bold text-studio-ink">
-                  {children}
-                </h3>
-              ),
-              h4: ({ children }) => (
-                <h4 className="mt-6 text-base font-bold text-studio-graphite">
-                  {children}
-                </h4>
-              ),
-              a: ({ href, children }) => (
-                <a
-                  href={href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-semibold text-studio-coral underline decoration-studio-coral/35 transition hover:text-studio-ink"
+        <>
+          <div className="mb-5 grid gap-2 rounded-lg border border-studio-ink/10 bg-studio-clay/45 p-3 sm:grid-cols-2 xl:grid-cols-4">
+            {summaryItems.map((item) => {
+              const Icon = item.icon;
+
+              return (
+                <div
+                  key={item.label}
+                  className="min-w-0 rounded-lg border border-studio-ink/10 bg-studio-cream/70 px-3 py-2"
                 >
-                  {children}
-                </a>
-              ),
-              code: ({ children }) => (
-                <code className="rounded-lg border border-studio-ink/10 bg-studio-clay px-1.5 py-0.5 text-studio-ink">
-                  {children}
-                </code>
-              )
-            }}
+                  <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.14em] text-studio-graphite/55">
+                    <Icon className="h-3.5 w-3.5 text-studio-coral" aria-hidden="true" />
+                    {item.label}
+                  </div>
+                  <p className="mt-1 truncate text-sm font-bold text-studio-ink">
+                    {item.value}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+
+          <motion.article
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.32 }}
+            className="max-w-none overflow-hidden text-studio-graphite [&_a]:break-words [&_hr]:border-studio-ink/10 [&_li]:my-1 [&_ol]:my-4 [&_ol]:list-decimal [&_ol]:space-y-1 [&_ol]:pl-6 [&_p]:my-4 [&_p]:leading-7 [&_strong]:text-studio-ink [&_table]:my-5 [&_table]:w-full [&_table]:overflow-hidden [&_td]:border [&_td]:border-studio-ink/10 [&_td]:p-3 [&_th]:border [&_th]:border-studio-ink/10 [&_th]:bg-studio-clay/80 [&_th]:p-3 [&_ul]:my-4 [&_ul]:list-disc [&_ul]:space-y-1 [&_ul]:pl-6"
           >
-            {report}
-          </ReactMarkdown>
-        </motion.article>
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              components={{
+                h2: ({ children }) => (
+                  <h2 className="gradient-text mt-0 border-b border-studio-ink/10 pb-3 font-serif text-3xl font-semibold">
+                    {children}
+                  </h2>
+                ),
+                h3: ({ children }) => (
+                  <h3 className="mt-8 text-xl font-bold text-studio-ink">
+                    {children}
+                  </h3>
+                ),
+                h4: ({ children }) => (
+                  <h4 className="mt-6 text-base font-bold text-studio-graphite">
+                    {children}
+                  </h4>
+                ),
+                a: ({ href, children }) => (
+                  <a
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-semibold text-studio-coral underline decoration-studio-coral/35 transition hover:text-studio-ink"
+                  >
+                    {children}
+                  </a>
+                ),
+                code: ({ children }) => (
+                  <code className="rounded-lg border border-studio-ink/10 bg-studio-clay px-1.5 py-0.5 text-studio-ink">
+                    {children}
+                  </code>
+                )
+              }}
+            >
+              {report}
+            </ReactMarkdown>
+          </motion.article>
+        </>
       )}
     </section>
   );

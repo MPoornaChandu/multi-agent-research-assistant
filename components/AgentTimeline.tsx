@@ -16,6 +16,13 @@ type AgentTimelineProps = {
   events: TimelineEvent[];
 };
 
+const emptyTimelineRows = [
+  "Supervisor waiting",
+  "Researchers ready",
+  "Sources pending",
+  "Synthesis idle"
+];
+
 function StatusIcon({
   shouldReduceMotion,
   status
@@ -59,8 +66,31 @@ export const AgentTimeline = memo(function AgentTimeline({
       </div>
 
       {events.length === 0 ? (
-        <div className="clay-card p-5 text-sm leading-6 text-studio-graphite/70">
-          Agent activity will appear here as soon as the stream starts.
+        <div className="clay-card p-5">
+          <p className="text-sm leading-6 text-studio-graphite/70">
+            Agent activity will appear here as soon as the stream starts.
+          </p>
+          <div className="mt-4 space-y-2">
+            {emptyTimelineRows.map((row, index) => (
+              <div
+                key={row}
+                className="flex items-center gap-3 rounded-lg border border-studio-ink/10 bg-studio-cream/65 px-3 py-2 text-sm font-semibold text-studio-graphite"
+              >
+                <span
+                  className={`h-2 w-2 rounded-full ${
+                    index === 0
+                      ? "bg-studio-amber"
+                      : index === 1
+                        ? "bg-studio-sage"
+                        : index === 2
+                          ? "bg-studio-violet"
+                          : "bg-studio-coral"
+                  }`}
+                />
+                {row}
+              </div>
+            ))}
+          </div>
         </div>
       ) : (
         <ol className="space-y-3">

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 import {
   ArrowRight,
+  BrainCircuit,
   BriefcaseBusiness,
   CheckCircle2,
   FileText,
@@ -14,7 +15,9 @@ import {
   RadioTower,
   Route,
   Search,
+  Send,
   Sparkles,
+  SquarePen,
   Zap
 } from "lucide-react";
 import { AnimatedResearchDemo } from "@/components/AnimatedResearchDemo";
@@ -22,30 +25,48 @@ import { FloatingCards } from "@/components/FloatingCards";
 import { StatusPill } from "@/components/StatusPill";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
-const architecture = [
+const architectureFlow = [
+  {
+    title: "User topic",
+    description: "A validated research prompt enters the studio.",
+    icon: SquarePen,
+    accent: "bg-studio-coral/25"
+  },
   {
     title: "Supervisor",
-    description: "Turns a broad topic into exactly three focused research questions.",
+    description: "Breaks the topic into three focused sub-questions.",
     icon: GitBranch,
-    accent: "bg-studio-amber"
+    accent: "bg-studio-amber/35"
   },
   {
-    title: "Parallel Researchers",
-    description: "Three agents search the web at the same time and summarize evidence.",
+    title: "3 parallel researchers + Tavily",
+    description: "Searches the web concurrently and summarizes evidence.",
     icon: Search,
-    accent: "bg-studio-sage"
+    accent: "bg-studio-sage/35"
   },
   {
-    title: "Synthesizer",
-    description: "Gemini 2.5 Flash Lite writes a structured markdown dossier with citations.",
-    icon: FileText,
-    accent: "bg-studio-coral"
-  },
-  {
-    title: "Router Checkpoint",
-    description: "LangGraph keeps the workflow resilient when one researcher fails.",
+    title: "Router checkpoint",
+    description: "Routes successful research forward and handles failed branches.",
     icon: Route,
-    accent: "bg-studio-violet"
+    accent: "bg-studio-violet/35"
+  },
+  {
+    title: "Gemini synthesis",
+    description: "Turns the findings into a concise cited narrative.",
+    icon: BrainCircuit,
+    accent: "bg-studio-coral/25"
+  },
+  {
+    title: "Markdown report + citations",
+    description: "Produces a readable dossier with numbered sources.",
+    icon: FileText,
+    accent: "bg-studio-amber/35"
+  },
+  {
+    title: "SSE stream to UI",
+    description: "Streams timeline events, sources, and the final report.",
+    icon: Send,
+    accent: "bg-studio-sage/35"
   }
 ];
 
@@ -283,7 +304,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section id="workflow" className="relative px-5 py-14 md:px-8">
+      <section id="architecture" className="relative px-5 py-14 md:px-8">
         <motion.div
           initial="hidden"
           whileInView="visible"
@@ -295,35 +316,95 @@ export default function HomePage() {
           <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div className="max-w-2xl">
               <p className="text-sm font-bold uppercase tracking-[0.18em] text-studio-coral">
-                How it works
+                Architecture
               </p>
               <h2 className="mt-3 font-serif text-4xl font-semibold leading-tight text-studio-ink">
-                Built like a small research desk, not a chat box.
+                The workflow is legible in ten seconds.
               </h2>
+              <p className="mt-4 text-base leading-7 text-studio-graphite/75">
+                The API route calls the compiled LangGraph runner for the agent
+                nodes, while the route owns SSE framing, cache checks, validation,
+                and production-safe response mapping.
+              </p>
             </div>
-            <StatusPill status="running" label="SSE stream ready" />
+            <StatusPill status="running" label="LangGraph + SSE" />
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            {architecture.map((item, index) => {
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-7">
+            {architectureFlow.map((item, index) => {
               const Icon = item.icon;
+              const hasConnector = index < architectureFlow.length - 1;
+
               return (
-                <motion.article
+                <motion.div
                   key={item.title}
                   initial={{ opacity: 0, y: 18 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.28, delay: index * 0.08 }}
-                  className="clay-card hover-3d p-5"
+                  className="relative"
                 >
-                  <div className={`mb-6 flex h-11 w-11 items-center justify-center rounded-lg ${item.accent}`}>
-                    <Icon className="h-5 w-5 text-studio-ink" aria-hidden="true" />
-                  </div>
-                  <h3 className="text-lg font-bold text-studio-ink">{item.title}</h3>
-                  <p className="mt-3 text-sm leading-6 text-studio-graphite/70">
-                    {item.description}
-                  </p>
-                </motion.article>
+                  <article className="clay-card relative z-10 flex h-full flex-col p-4">
+                    <div
+                      className={`mb-4 flex h-10 w-10 items-center justify-center rounded-lg ${item.accent}`}
+                    >
+                      <Icon className="h-5 w-5 text-studio-ink" aria-hidden="true" />
+                    </div>
+                    <h3 className="text-sm font-bold leading-5 text-studio-ink">
+                      {item.title}
+                    </h3>
+                    <p className="mt-2 text-xs font-medium leading-5 text-studio-graphite/70">
+                      {item.description}
+                    </p>
+                  </article>
+
+                  {hasConnector ? (
+                    <>
+                      <div
+                        aria-hidden="true"
+                        className="absolute left-5 top-full z-0 h-3 w-px overflow-hidden bg-studio-ink/10 sm:hidden"
+                      >
+                        <motion.span
+                          className="block h-1/2 w-full bg-studio-coral"
+                          animate={
+                            shouldReduceMotion ? { y: 0 } : { y: ["-100%", "220%"] }
+                          }
+                          transition={
+                            shouldReduceMotion
+                              ? { duration: 0.2 }
+                              : {
+                                  duration: 1.8,
+                                  repeat: Infinity,
+                                  ease: "easeInOut",
+                                  delay: index * 0.12
+                                }
+                          }
+                        />
+                      </div>
+                      <div
+                        aria-hidden="true"
+                        className="absolute right-[-0.9rem] top-1/2 z-0 hidden h-px w-5 overflow-hidden bg-studio-ink/10 lg:block"
+                      >
+                        <motion.span
+                          className="block h-full w-1/2 bg-gradient-to-r from-studio-coral via-studio-violet to-studio-amber"
+                          animate={
+                            shouldReduceMotion ? { x: 0 } : { x: ["-110%", "220%"] }
+                          }
+                          transition={
+                            shouldReduceMotion
+                              ? { duration: 0.2 }
+                              : {
+                                  duration: 1.8,
+                                  repeat: Infinity,
+                                  ease: "easeInOut",
+                                  delay: index * 0.12
+                                }
+                          }
+                        />
+                      </div>
+                    </>
+                  ) : null}
+                </motion.div>
               );
             })}
           </div>

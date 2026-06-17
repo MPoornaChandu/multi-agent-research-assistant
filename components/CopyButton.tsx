@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Check, Clipboard } from "lucide-react";
 
 type CopyButtonProps = {
@@ -34,6 +34,15 @@ export function CopyButton({
   const [copied, setCopied] = useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  useEffect(
+    () => () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    },
+    []
+  );
+
   return (
     <button
       type="button"
@@ -41,7 +50,6 @@ export function CopyButton({
       onClick={async () => {
         if (!text) return;
 
-        await copyText(text);
         setCopied(true);
 
         if (timeoutRef.current) {
@@ -49,6 +57,12 @@ export function CopyButton({
         }
 
         timeoutRef.current = setTimeout(() => setCopied(false), 1800);
+
+        try {
+          await copyText(text);
+        } catch {
+          // Some embedded browsers block clipboard writes even after a user gesture.
+        }
       }}
       className={`studio-button inline-flex h-10 items-center justify-center gap-2 bg-studio-ink px-3 text-sm font-semibold text-studio-cream disabled:cursor-not-allowed disabled:bg-studio-graphite/25 disabled:text-studio-graphite/50 ${className}`}
     >
@@ -57,7 +71,7 @@ export function CopyButton({
       ) : (
         <Clipboard className="h-4 w-4" aria-hidden="true" />
       )}
-      {copied ? "Copied" : label}
+      <span aria-live="polite">{copied ? "Copied" : label}</span>
     </button>
   );
 }

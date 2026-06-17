@@ -84,6 +84,23 @@ The app uses a small in-memory `Map` cache as a best-effort optimization for rec
 - App Router metadata, favicon, and Open Graph image.
 - ESLint and Vitest coverage for pure helper functions.
 
+## What this project demonstrates
+
+- Agent workflow design
+- Parallel web search
+- SSE streaming UX
+- Server-only API key handling
+- Graceful failure handling
+- Citation-aware synthesis
+- Responsive product UI
+- Fast Mode optimization
+
+## Notes and limitations
+
+- Fast Mode uses templated planning and one final synthesis call for speed.
+- The cache is best-effort in memory and may not persist across Vercel serverless instances.
+- Tavily and Gemini responses depend on external API availability.
+
 ## Environment Variables
 
 Create `.env.local` from `.env.example` and add real keys:
@@ -158,9 +175,9 @@ export const maxDuration = 60;
 
 ## Resume Bullet
 
-Built a Multi-Agent Research Assistant using Next.js 14, LangGraph, Gemini, and Tavily Search API that autonomously breaks research topics into sub-questions, runs parallel web searches, and synthesizes structured markdown reports with cited sources — streamed live to the UI.
+Built a Multi-Agent Research Assistant using Next.js 14, LangGraph, Gemini, and Tavily Search API that autonomously breaks research topics into sub-questions, runs parallel web searches, and synthesizes structured markdown reports with cited sources - streamed live to the UI.
 
-## Notes
+## Additional notes
 
 - The project uses the official Tavily JavaScript SDK package `@tavily/core@0.5.0`, pinned exactly.
 - The sample CTA pre-fills a topic instead of auto-running the API, so visitors do not spend API calls unintentionally.
