@@ -2,7 +2,10 @@
 node_modules
 .env
 .env.local
+.env.production
+.env.development
 .env*.local
+.vercel
 npm-debug.log*
 next-dev-*.log
 yarn-debug.log*

@@ -1,184 +1,160 @@
 # Multi-Agent Research Assistant
 
-A polished Research Studio built with Next.js 14, TypeScript, LangGraph, Gemini, Tavily Search, Tailwind CSS, and Framer Motion. It breaks a research topic into focused sub-questions, runs parallel web research, and streams a cited markdown dossier to the UI.
+A full-stack AI research assistant that uses multiple agents to break down a research topic, search the web, gather sources, and synthesize a structured report with citations.
 
-Live site: [multi-agent-research-assistant-delta.vercel.app](https://multi-agent-research-assistant-delta.vercel.app/)
+**Live demo:** [multi-agent-research-assistant-delta.vercel.app](https://multi-agent-research-assistant-delta.vercel.app/)
 
-## Screenshot
+## Key Features
 
-![Multi-Agent Research Assistant preview](public/demo-screenshot.svg)
+- Multi-agent research workflow
+- Supervisor agent for task planning
+- Multiple researcher agents
+- Synthesis agent for final report generation
+- Source-backed research output
+- Live agent timeline
+- Streaming research progress
+- Structured markdown report
+- Web search integration with Tavily
+- Gemini-powered reasoning
+- Responsive dashboard UI
+- Light/dark mode
+- Professional animated interface
 
-## Architecture
+## Tech Stack
+
+- Next.js
+- React
+- TypeScript
+- Tailwind CSS
+- LangGraph
+- Gemini API
+- Tavily API
+- Vercel
+- Framer Motion
+
+## Screenshots
+
+![Dashboard](./screenshots/dashboard.png)
+
+![Research Flow](./screenshots/research-flow.png)
+
+![Agent Timeline](./screenshots/agent-timeline.png)
+
+![Report Output](./screenshots/report-output.png)
+
+![Light Mode](./screenshots/light-mode.png)
+
+TODO: Add `./screenshots/sources.png` when a dedicated sources screenshot is captured.
+
+## System Architecture
 
 ```mermaid
 flowchart TD
-  A["User topic"] --> B["Next.js research API route"]
-  B --> C["LangGraph StateGraph runner"]
-  C --> D["Supervisor Agent"]
-  D --> E1["Researcher Agent 1"]
-  D --> E2["Researcher Agent 2"]
-  D --> E3["Researcher Agent 3"]
-  E1 --> F["Tavily Search API"]
-  E2 --> F
-  E3 --> F
-  E1 --> G["Router checkpoint"]
-  E2 --> G
-  E3 --> G
-  G --> H["Synthesis Agent"]
-  H --> I["Streamed markdown report"]
+  A["User Research Query"] --> B["Supervisor Agent"]
+  B --> C["Sub-question Generation"]
+  C --> D["Parallel Researcher Agents"]
+  D --> E["Tavily Web Search"]
+  E --> F["Source Collection"]
+  F --> G["Synthesis Agent"]
+  G --> H["Final Report with Citations"]
+  H --> I["Streaming UI"]
 ```
-
-The API route calls `runResearchGraph({ topic, emit })` from `agents/graph.ts`. The compiled LangGraph owns the supervisor, parallel researcher, router, and synthesizer nodes. The route still owns SSE framing, validation, cache lookup, final error mapping, and Vercel-safe response headers.
-
-## Streaming Contract
-
-The frontend consumes SSE-style chunks from a `fetch()` POST stream. Event types are kept stable for the research workspace:
 
 ```txt
-research_started
-agent_started
-agent_completed
-agent_failed
-subquestions_ready
-sources_ready
-synthesis_started
-report_ready
-research_completed
-cache_hit
-error
-done
+User Research Query
+-> Supervisor Agent
+-> Sub-question Generation
+-> Parallel Researcher Agents
+-> Tavily Web Search
+-> Source Collection
+-> Synthesis Agent
+-> Final Report with Citations
+-> Streaming UI
 ```
 
-## Agent Modes
+The Next.js API route validates the topic, checks server-side API configuration, starts the LangGraph workflow, and streams progress events back to the research workspace. The UI renders each agent step as it happens, then displays sources and the final markdown report.
 
-Fast Mode is enabled by default:
+## Agent Workflow
 
-```env
-FAST_MODE=true
-```
-
-Fast Mode uses templated supervisor planning, Tavily snippets inside each researcher, and one final Gemini synthesis call. This keeps demos quicker and less expensive.
-
-Full Agent Mode can be enabled with:
-
-```env
-FAST_MODE=false
-```
-
-Full Agent Mode uses Gemini at the supervisor, researcher, and synthesis stages.
-
-## Cache Behavior
-
-The app uses a small in-memory `Map` cache as a best-effort optimization for recent topics. It is useful during local development and warm server instances, but it is not persistent across Vercel serverless instances, cold starts, or deployments. The UI still supports the `cache_hit` event when a local cache entry is available.
-
-## Features
-
-- LangGraph-backed multi-agent workflow with resilient routing.
-- Parallel Tavily researchers with graceful per-agent failure handling.
-- Live SSE timeline, source cards, and markdown report rendering.
-- Fast Mode / Full Agent Mode badge in the research workspace.
-- Light, dark, and system theme switching with local persistence.
-- Warm editorial light theme and graphite/espresso dark theme.
-- Production-safe user errors and local-only environment diagnostics.
-- Accessible topic textarea label, clear external link labels, and reduced-motion support.
-- App Router metadata, favicon, and Open Graph image.
-- ESLint and Vitest coverage for pure helper functions.
-
-## What this project demonstrates
-
-- Agent workflow design
-- Parallel web search
-- SSE streaming UX
-- Server-only API key handling
-- Graceful failure handling
-- Citation-aware synthesis
-- Responsive product UI
-- Fast Mode optimization
-
-## Notes and limitations
-
-- Fast Mode uses templated planning and one final synthesis call for speed.
-- The cache is best-effort in memory and may not persist across Vercel serverless instances.
-- Tavily and Gemini responses depend on external API availability.
+- The supervisor splits the user topic into focused sub-questions.
+- Researcher agents search the web and collect relevant sources for each sub-question.
+- The synthesis agent combines successful findings into one structured final report.
+- The UI streams progress so users can see each agent step in real time.
 
 ## Environment Variables
 
-Create `.env.local` from `.env.example` and add real keys:
+Create `.env.local` from `.env.example` and add your own values:
 
 ```env
-GOOGLE_API_KEY=your_real_key_here
-TAVILY_API_KEY=your_real_key_here
-GEMINI_MODEL=gemini-2.5-flash-lite
-FAST_MODE=true
-TAVILY_MAX_RESULTS=2
-NEXT_PUBLIC_APP_URL=https://multi-agent-research-assistant-delta.vercel.app/
+GEMINI_API_KEY=
+GOOGLE_API_KEY=
+TAVILY_API_KEY=
+NEXT_PUBLIC_APP_URL=
 ```
 
-`.env.local` is gitignored. Commit `.env.example`, never real API keys.
+Notes:
 
-The safe environment check route returns booleans only:
-
-```txt
-/api/env-check
-```
+- Do not commit `.env.local`.
+- API keys are server-side only.
+- Add the same environment variables in Vercel before deployment.
+- The app supports either `GEMINI_API_KEY` or `GOOGLE_API_KEY` for Gemini access.
 
 ## Local Setup
 
 ```bash
 npm install
-cp .env.example .env.local
 npm run dev
+npm run build
+```
+
+For local development, copy the example environment file first:
+
+```bash
+cp .env.example .env.local
 ```
 
 On Windows PowerShell:
 
 ```powershell
 Copy-Item .env.example .env.local
-npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Then open [http://localhost:3000](http://localhost:3000).
 
-If local API keys are not detected, the app shows a local-only message asking you to check `.env.local`, variable names, and restart `npm run dev`. Production users only see a temporary availability message.
+## Usage
 
-## Scripts
+1. Enter a research topic.
+2. Start research.
+3. Watch the agents work in real time.
+4. Review generated sources.
+5. Read the final synthesized report.
 
-```bash
-npm run build
-npm run lint
-npm run test
-npm run typecheck
-```
+## Deployment
 
-## Deploy To Vercel
+This project is deployed on Vercel.
+
+To deploy your own copy:
 
 1. Push the repository to GitHub.
-2. Import the project in Vercel.
-3. Add `GOOGLE_API_KEY`, `TAVILY_API_KEY`, `GEMINI_MODEL`, `FAST_MODE`, `TAVILY_MAX_RESULTS`, and `NEXT_PUBLIC_APP_URL` in Vercel Project Settings.
+2. Import the project into Vercel.
+3. Add the required environment variables in Vercel Project Settings.
 4. Deploy with the default Next.js settings.
 
-The research API uses:
+## Project Status
 
-```ts
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
-export const maxDuration = 60;
-```
+Production-style portfolio project / active development.
 
-## Security Notes
+## Future Improvements
 
-- API keys are read only on the server.
-- No `NEXT_PUBLIC_GOOGLE_API_KEY` or `NEXT_PUBLIC_TAVILY_API_KEY` is used.
-- `.env.local` is ignored by git.
-- `/api/env-check` returns only non-secret booleans/config flags.
-- Production errors do not expose local setup instructions, key names, or stack traces.
+- Save research history
+- Export report as PDF/Markdown
+- User authentication
+- Better source ranking
+- Research depth selector
+- More agent roles
+- Database persistence
+- Team collaboration
 
-## Resume Bullet
+## Portfolio Note
 
-Built a Multi-Agent Research Assistant using Next.js 14, LangGraph, Gemini, and Tavily Search API that autonomously breaks research topics into sub-questions, runs parallel web searches, and synthesizes structured markdown reports with cited sources - streamed live to the UI.
-
-## Additional notes
-
-- The project uses the official Tavily JavaScript SDK package `@tavily/core@0.5.0`, pinned exactly.
-- The sample CTA pre-fills a topic instead of auto-running the API, so visitors do not spend API calls unintentionally.
-- The Open Graph image is stored at `app/opengraph-image.png`; the app icon is `app/icon.svg`.
+This project is built for learning, portfolio, and AI research workflow demonstration.
