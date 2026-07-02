@@ -15,13 +15,13 @@ export function validateTopic(
   const topic = normalizeTopic(input);
 
   if (!topic) {
-    return { ok: false, error: "Enter a research topic to begin." };
+    return { ok: false, error: `Please enter at least ${TOPIC_MIN_LENGTH} characters.` };
   }
 
   if (topic.length < TOPIC_MIN_LENGTH) {
     return {
       ok: false,
-      error: `Topic must be at least ${TOPIC_MIN_LENGTH} characters.`
+      error: `Please enter at least ${TOPIC_MIN_LENGTH} characters.`
     };
   }
 

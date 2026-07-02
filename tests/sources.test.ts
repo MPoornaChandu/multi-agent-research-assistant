@@ -3,7 +3,7 @@ import { dedupeAndRenumberSources } from "@/lib/sources";
 import type { Finding, Source } from "@/lib/types";
 
 function source(id: number, title: string, url: string, snippet: string): Source {
-  return { id, title, url, snippet };
+  return { id, title, url, snippet, fullSnippet: snippet };
 }
 
 function finding(researcherId: number, sources: Source[]): Finding {

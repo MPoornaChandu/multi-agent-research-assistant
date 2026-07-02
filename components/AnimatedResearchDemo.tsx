@@ -409,8 +409,17 @@ export function AnimatedResearchDemo() {
                 <Sparkles className="h-3.5 w-3.5 text-studio-coral" aria-hidden="true" />
                 Live Dossier Preview
               </div>
-              <span className="rounded-lg border border-studio-sage/40 bg-studio-sage/15 px-2.5 py-1 text-[11px] font-bold text-studio-graphite">
-                Fake demo
+              <span className="inline-flex items-center gap-2 rounded-lg border border-studio-sage/40 bg-studio-sage/15 px-2.5 py-1 text-[11px] font-bold text-studio-graphite">
+                <motion.span
+                  className="h-2 w-2 rounded-full bg-studio-sage"
+                  animate={
+                    shouldReduceMotion
+                      ? { opacity: 1 }
+                      : { opacity: [0.35, 1, 0.35], scale: [1, 1.25, 1] }
+                  }
+                  transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
+                />
+                Live Preview
               </span>
             </div>
 
@@ -544,6 +553,7 @@ export function AnimatedResearchDemo() {
               <span className="h-2 w-2 rounded-full bg-studio-sage" />
             </div>
           </div>
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-studio-cream/95 via-studio-cream/65 to-transparent" />
         </motion.div>
       </motion.div>
     </section>

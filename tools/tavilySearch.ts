@@ -1,6 +1,7 @@
 import { tavily } from "@tavily/core";
 import type { Source } from "@/lib/types";
 import { getTavilyApiKey, getTavilyMaxResults } from "@/lib/env";
+import { normalizeSourceSnippet } from "@/lib/sources";
 
 async function withTimeout<T>(
   promise: Promise<T>,
@@ -38,12 +39,19 @@ export async function tavilySearch(query: string): Promise<Source[]> {
       "Tavily search timed out"
     );
 
-    return response.results.slice(0, maxResults).map((result, index) => ({
-      id: index + 1,
-      title: result.title || "Untitled source",
-      url: result.url,
-      snippet: result.content || "No snippet available."
-    }));
+    return response.results.slice(0, maxResults).map((result, index) => {
+      const normalizedSnippet = normalizeSourceSnippet(
+        result.content || "No snippet available."
+      );
+
+      return {
+        id: index + 1,
+        title: result.title || "Untitled source",
+        url: result.url,
+        ...normalizedSnippet,
+        score: typeof result.score === "number" ? result.score : undefined
+      };
+    });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown Tavily error";
     throw new Error(`Tavily search failed: ${message}`);

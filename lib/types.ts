@@ -3,6 +3,9 @@ export type Source = {
   title: string;
   url: string;
   snippet: string;
+  fullSnippet?: string;
+  score?: number;
+  metadata?: Record<string, string | number | boolean | null>;
 };
 
 export type Finding = {

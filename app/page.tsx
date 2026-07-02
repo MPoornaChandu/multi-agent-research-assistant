@@ -1,7 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
   ArrowRight,
   BrainCircuit,
@@ -12,12 +13,14 @@ import {
   Github,
   Layers3,
   Linkedin,
+  Menu,
   RadioTower,
   Route,
   Search,
   Send,
   Sparkles,
   SquarePen,
+  X,
   Zap
 } from "lucide-react";
 import { AnimatedResearchDemo } from "@/components/AnimatedResearchDemo";
@@ -70,11 +73,13 @@ const architectureFlow = [
   }
 ];
 
-const workflow = [
-  ["00:01", "Supervisor drafts the research plan", "completed"],
-  ["00:04", "Researchers fan out across Tavily", "running"],
-  ["00:11", "Sources are deduped and renumbered", "idle"],
-  ["00:18", "Synthesizer prepares the dossier", "idle"]
+const miniWorkflow = [
+  { label: "User Input", icon: SquarePen },
+  { label: "Supervisor", icon: GitBranch },
+  { label: "3 Parallel Researchers", icon: Search },
+  { label: "Router", icon: Route },
+  { label: "Synthesizer", icon: BrainCircuit },
+  { label: "Dossier", icon: FileText }
 ] as const;
 
 const stack = [
@@ -194,6 +199,7 @@ function HeroDecorations({
 
 export default function HomePage() {
   const shouldReduceMotion = Boolean(useReducedMotion());
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
     <main className="paper-grid min-h-screen overflow-hidden text-studio-ink">
@@ -208,7 +214,7 @@ export default function HomePage() {
             </span>
           </Link>
 
-          <div className="flex items-center gap-2">
+          <div className="hidden items-center gap-2 md:flex">
             <ThemeToggle />
             <Link
               href={SAMPLE_RESEARCH_HREF}
@@ -227,7 +233,52 @@ export default function HomePage() {
               View GitHub
             </a>
           </div>
+          <button
+            type="button"
+            onClick={() => setIsMobileMenuOpen((current) => !current)}
+            className="studio-button inline-flex h-10 w-10 items-center justify-center bg-studio-cream text-studio-graphite md:hidden"
+            aria-label="Open navigation actions"
+            aria-expanded={isMobileMenuOpen}
+          >
+            {isMobileMenuOpen ? (
+              <X className="h-4 w-4" aria-hidden="true" />
+            ) : (
+              <Menu className="h-4 w-4" aria-hidden="true" />
+            )}
+          </button>
         </nav>
+        <AnimatePresence>
+          {isMobileMenuOpen ? (
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.2 }}
+              className="mx-5 mb-4 grid gap-3 rounded-lg border border-studio-ink/10 bg-studio-cream/95 p-3 shadow-lift md:hidden"
+            >
+              <div className="flex flex-wrap items-center gap-2">
+                <ThemeToggle />
+                <Link
+                  href={SAMPLE_RESEARCH_HREF}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="studio-button inline-flex h-10 min-w-0 items-center gap-2 bg-studio-cream px-3 text-sm font-semibold text-studio-graphite"
+                >
+                  Prefill sample
+                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                </Link>
+                <a
+                  href={PROJECT_GITHUB_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="studio-button inline-flex h-10 min-w-0 items-center gap-2 bg-studio-ink px-3 text-sm font-semibold text-studio-cream"
+                >
+                  <Github className="h-4 w-4" aria-hidden="true" />
+                  View GitHub
+                </a>
+              </div>
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
       </header>
 
       <section className="relative min-h-[78vh] overflow-hidden px-5 pb-14 pt-16 md:px-8 md:pt-24">
@@ -445,30 +496,88 @@ export default function HomePage() {
             <div className="clay-card p-5">
               <div className="mb-5 flex items-center justify-between gap-4">
                 <div>
-                  <h3 className="font-bold text-studio-ink">Mini timeline</h3>
-                  <p className="text-sm text-studio-graphite/70">A preview of the live stream.</p>
+                  <h3 className="font-bold text-studio-ink">Workflow map</h3>
+                  <p className="text-sm text-studio-graphite/70">User Input to final dossier.</p>
                 </div>
                 <RadioTower className="h-5 w-5 text-studio-violet" aria-hidden="true" />
               </div>
 
-              <ol className="space-y-3">
-                {workflow.map(([time, label, status], index) => (
-                  <motion.li
-                    key={label}
-                    initial={{ opacity: 0, x: 14 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.25, delay: index * 0.09 }}
-                    className="flex items-center gap-3 rounded-lg border border-studio-ink/10 bg-studio-cream/65 p-3"
-                  >
-                    <span className="w-12 text-xs font-bold text-studio-graphite/55">{time}</span>
-                    <span className="min-w-0 flex-1 text-sm font-semibold leading-6 text-studio-graphite">
-                      {label}
-                    </span>
-                    <StatusPill status={status} />
-                  </motion.li>
-                ))}
-              </ol>
+              <div className="relative overflow-hidden rounded-lg border border-studio-ink/10 bg-studio-cream/60 p-4">
+                <div
+                  aria-hidden="true"
+                  className="absolute left-8 top-10 h-[calc(100%-5rem)] w-px bg-studio-ink/10 sm:left-0 sm:right-0 sm:top-1/2 sm:mx-10 sm:h-px sm:w-auto"
+                />
+                <motion.div
+                  aria-hidden="true"
+                  className="absolute left-8 top-10 h-10 w-px bg-gradient-to-b from-studio-coral via-studio-violet to-studio-sage sm:hidden"
+                  animate={
+                    shouldReduceMotion
+                      ? { opacity: 0.75 }
+                      : {
+                          opacity: [0.35, 0.95, 0.35],
+                          y: ["0%", "560%"]
+                        }
+                  }
+                  transition={
+                    shouldReduceMotion
+                      ? { duration: 0.2 }
+                      : { duration: 3.8, repeat: Infinity, ease: "easeInOut" }
+                  }
+                />
+                <motion.div
+                  aria-hidden="true"
+                  className="absolute left-10 top-1/2 hidden h-px w-16 bg-gradient-to-r from-studio-coral via-studio-violet to-studio-sage sm:block"
+                  animate={
+                    shouldReduceMotion
+                      ? { opacity: 0.75 }
+                      : {
+                          opacity: [0.35, 0.95, 0.35],
+                          x: ["0%", "520%"]
+                        }
+                  }
+                  transition={
+                    shouldReduceMotion
+                      ? { duration: 0.2 }
+                      : { duration: 3.8, repeat: Infinity, ease: "easeInOut" }
+                  }
+                />
+                <div className="relative grid gap-3 sm:grid-cols-3">
+                  {miniWorkflow.map((node, index) => {
+                    const Icon = node.icon;
+
+                    return (
+                      <motion.div
+                        key={node.label}
+                        initial={{ opacity: 0, y: 10 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.24, delay: index * 0.06 }}
+                        className="relative flex min-h-16 items-center gap-3 rounded-lg border border-studio-ink/10 bg-studio-cream/85 p-3 shadow-soft"
+                      >
+                        <motion.span
+                          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-studio-clay text-studio-ink"
+                          animate={
+                            shouldReduceMotion
+                              ? { scale: 1 }
+                              : { scale: [1, 1.04, 1] }
+                          }
+                          transition={{
+                            duration: 2.4,
+                            repeat: Infinity,
+                            ease: "easeInOut",
+                            delay: index * 0.18
+                          }}
+                        >
+                          <Icon className="h-4 w-4" aria-hidden="true" />
+                        </motion.span>
+                        <span className="min-w-0 text-sm font-bold leading-5 text-studio-graphite">
+                          {node.label}
+                        </span>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
             <FloatingCards />
           </div>

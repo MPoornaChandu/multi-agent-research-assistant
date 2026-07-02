@@ -9,14 +9,14 @@ describe("validateTopic", () => {
   it("rejects an empty string", () => {
     expect(validateTopic("   ")).toEqual({
       ok: false,
-      error: "Enter a research topic to begin."
+      error: `Please enter at least ${TOPIC_MIN_LENGTH} characters.`
     });
   });
 
   it("rejects topics under 10 characters", () => {
     expect(validateTopic("AI news")).toEqual({
       ok: false,
-      error: `Topic must be at least ${TOPIC_MIN_LENGTH} characters.`
+      error: `Please enter at least ${TOPIC_MIN_LENGTH} characters.`
     });
   });
 

@@ -1,9 +1,17 @@
 "use client";
 
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { Clock3, FileText, RadioTower, SearchCheck, Sparkles } from "lucide-react";
+import {
+  Clock3,
+  Download,
+  FileText,
+  RadioTower,
+  SearchCheck,
+  Sparkles
+} from "lucide-react";
 import { CopyButton } from "@/components/CopyButton";
 
 type ReportViewerProps = {
@@ -14,6 +22,7 @@ type ReportViewerProps = {
   modeLabel?: string;
   durationMs?: number | null;
   cached?: boolean;
+  runStatus?: "idle" | "running" | "completed" | "failed";
 };
 
 const previewRows = [
@@ -35,6 +44,46 @@ function formatDuration(durationMs?: number | null) {
   return `${(durationMs / 1000).toFixed(durationMs < 10000 ? 1 : 0)} s`;
 }
 
+function sanitizeFilename(topic: string) {
+  const base = topic
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 72);
+
+  return `${base || "research-report"}.md`;
+}
+
+function downloadMarkdown(report: string, topic: string) {
+  const blob = new Blob([report], { type: "text/markdown;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = sanitizeFilename(topic);
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
+function linkifyCitations(report: string, sourceCount: number) {
+  if (!report || sourceCount === 0) {
+    return report;
+  }
+
+  return report.replace(/\[(\d+)\]/g, (match, citationId, offset, fullText) => {
+    const nextCharacter = fullText[offset + match.length];
+    const citationNumber = Number(citationId);
+
+    if (nextCharacter === "(" || citationNumber < 1 || citationNumber > sourceCount) {
+      return match;
+    }
+
+    return `[${match}](#source-${citationNumber})`;
+  });
+}
+
 export function ReportViewer({
   report,
   isRunning = false,
@@ -42,8 +91,14 @@ export function ReportViewer({
   sourceCount = 0,
   modeLabel = "Mode checking",
   durationMs = null,
-  cached = false
+  cached = false,
+  runStatus = "idle"
 }: ReportViewerProps) {
+  const [progress, setProgress] = useState(0);
+  const linkedReport = useMemo(
+    () => linkifyCitations(report, sourceCount),
+    [report, sourceCount]
+  );
   const summaryItems = [
     {
       label: "Topic",
@@ -67,15 +122,55 @@ export function ReportViewer({
     }
   ];
 
+  useEffect(() => {
+    if (isRunning) {
+      setProgress((current) => (current > 0 ? current : 12));
+      const interval = window.setInterval(() => {
+        setProgress((current) => Math.min(85, current + Math.max(1, (85 - current) * 0.08)));
+      }, 450);
+
+      return () => window.clearInterval(interval);
+    }
+
+    if (runStatus === "completed" && report) {
+      setProgress(100);
+      return;
+    }
+
+    if (runStatus === "idle" || runStatus === "failed") {
+      setProgress(0);
+    }
+  }, [isRunning, report, runStatus]);
+
   return (
-    <section className="clay-card p-5">
-      <div className="mb-5 flex items-center justify-between gap-3">
+    <section id="research-dossier" className="clay-card overflow-hidden p-5">
+      {progress > 0 ? (
+        <div className="-mx-5 -mt-5 mb-5 h-1 overflow-hidden bg-studio-ink/10">
+          <motion.div
+            className="h-full bg-gradient-to-r from-studio-coral via-studio-violet to-studio-sage"
+            initial={false}
+            animate={{ width: `${progress}%` }}
+            transition={{ duration: 0.42, ease: "easeOut" }}
+          />
+        </div>
+      ) : null}
+      <div className="mb-5 flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
         <div>
           <h2 className="text-lg font-bold text-studio-ink">Research dossier</h2>
           <p className="text-sm text-studio-graphite/70">Markdown synthesis with cited sources.</p>
         </div>
-        <div className="flex items-center gap-2">
-          {report ? <CopyButton text={report} /> : null}
+        <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:justify-end">
+          {report ? <CopyButton text={report} className="w-full sm:w-auto" /> : null}
+          {report ? (
+            <button
+              type="button"
+              onClick={() => downloadMarkdown(report, topic)}
+              className="studio-button inline-flex h-10 w-full items-center justify-center gap-2 bg-studio-cream px-3 text-sm font-semibold text-studio-graphite sm:w-auto"
+            >
+              <Download className="h-4 w-4" aria-hidden="true" />
+              Download as Markdown
+            </button>
+          ) : null}
           <FileText className="h-5 w-5 text-studio-coral" aria-hidden="true" />
         </div>
       </div>
@@ -162,16 +257,20 @@ export function ReportViewer({
                     {children}
                   </h4>
                 ),
-                a: ({ href, children }) => (
+                a: ({ href, children }) => {
+                  const isSourceAnchor = href?.startsWith("#source-");
+
+                  return (
                   <a
                     href={href}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    target={isSourceAnchor ? undefined : "_blank"}
+                    rel={isSourceAnchor ? undefined : "noopener noreferrer"}
                     className="font-semibold text-studio-coral underline decoration-studio-coral/35 transition hover:text-studio-ink"
                   >
                     {children}
                   </a>
-                ),
+                  );
+                },
                 code: ({ children }) => (
                   <code className="rounded-lg border border-studio-ink/10 bg-studio-clay px-1.5 py-0.5 text-studio-ink">
                     {children}
@@ -179,7 +278,7 @@ export function ReportViewer({
                 )
               }}
             >
-              {report}
+              {linkedReport}
             </ReactMarkdown>
           </motion.article>
         </>

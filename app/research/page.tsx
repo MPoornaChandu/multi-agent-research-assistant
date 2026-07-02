@@ -2,16 +2,21 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowLeft,
+  CheckCircle2,
   Clock3,
   FileSearch,
   GitBranch,
+  Github,
   Home,
+  Menu,
   PanelRight,
   RadioTower,
-  RotateCcw
+  RotateCcw,
+  X,
+  Zap
 } from "lucide-react";
 import { AgentTimeline } from "@/components/AgentTimeline";
 import { CopyButton } from "@/components/CopyButton";
@@ -21,6 +26,7 @@ import { StatusPill } from "@/components/StatusPill";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { TopicInput } from "@/components/TopicInput";
 import type { Source, TimelineEvent } from "@/lib/types";
+import { normalizeSourceSnippet } from "@/lib/sources";
 import { validateTopic } from "@/lib/validation";
 
 type IncomingStreamEvent = {
@@ -47,6 +53,10 @@ const PRODUCTION_RESEARCH_UNAVAILABLE_MESSAGE =
   "Research is temporarily unavailable. Please try again in a few minutes.";
 const GEMINI_MODEL_HELP_MESSAGE =
   "Gemini model not available. The project is now configured to use gemini-2.5-flash-lite. Restart the dev server after updating .env.local.";
+const RECENT_TOPICS_KEY = "multi-agent-research-recent-topics";
+const SAMPLE_TOPIC = "Future of AI agents in software engineering internships";
+const PROJECT_GITHUB_URL =
+  "https://github.com/MPoornaChandu/multi-agent-research-assistant";
 
 function randomId() {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
@@ -125,6 +135,14 @@ function isGeminiModelError(message: string) {
   );
 }
 
+function isTopicValidationError(message: string | null) {
+  return (
+    message === "Please enter at least 10 characters." ||
+    message === "Enter a valid research topic." ||
+    Boolean(message?.startsWith("Topic must be"))
+  );
+}
+
 function friendlyErrorMessage(message: string) {
   if (IS_PRODUCTION) {
     return PRODUCTION_RESEARCH_UNAVAILABLE_MESSAGE;
@@ -143,6 +161,7 @@ function friendlyErrorMessage(message: string) {
 
 export default function ResearchPage() {
   const [topic, setTopic] = useState("");
+  const [recentTopics, setRecentTopics] = useState<string[]>([]);
   const [events, setEvents] = useState<TimelineEvent[]>([]);
   const [report, setReport] = useState("");
   const [sources, setSources] = useState<Source[]>([]);
@@ -154,10 +173,14 @@ export default function ResearchPage() {
   const [isRunning, setIsRunning] = useState(false);
   const [runStatus, setRunStatus] = useState<RunStatus>("idle");
   const [error, setError] = useState<string | null>(null);
+  const [validationPulse, setValidationPulse] = useState(0);
+  const [showReadyToast, setShowReadyToast] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [envStatus, setEnvStatus] = useState<EnvStatus | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const abortWasRequestedRef = useRef(false);
   const initialTopicAppliedRef = useRef(false);
+  const completionToastKeyRef = useRef("");
 
   useEffect(() => {
     if (initialTopicAppliedRef.current || typeof window === "undefined") {
@@ -174,6 +197,50 @@ export default function ResearchPage() {
       initialTopicAppliedRef.current = true;
     }
   }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    try {
+      const stored = window.localStorage.getItem(RECENT_TOPICS_KEY);
+      const parsed = stored ? (JSON.parse(stored) as unknown) : [];
+
+      if (Array.isArray(parsed)) {
+        setRecentTopics(
+          parsed
+            .filter((item): item is string => typeof item === "string")
+            .slice(0, 5)
+        );
+      }
+    } catch {
+      setRecentTopics([]);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (runStatus !== "completed" || !report) {
+      return;
+    }
+
+    const toastKey = `${topic}-${report.length}`;
+    if (completionToastKeyRef.current === toastKey) {
+      return;
+    }
+
+    completionToastKeyRef.current = toastKey;
+    setShowReadyToast(true);
+    window.setTimeout(() => {
+      document.getElementById("research-dossier")?.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+    }, 120);
+
+    const timeout = window.setTimeout(() => setShowReadyToast(false), 4000);
+    return () => window.clearTimeout(timeout);
+  }, [report, runStatus, topic]);
 
   useEffect(() => {
     let ignore = false;
@@ -234,14 +301,22 @@ export default function ResearchPage() {
       durationMs?: number
     ) => {
       setEvents((current) => {
-        const duplicateRunningEvent =
-          status === "running" &&
-          current.some(
-            (event) => event.agent === agent && event.status === "running"
-          );
+        const runningEventIndex = current.findIndex(
+          (event) => event.agent === agent && event.status === "running"
+        );
 
-        if (duplicateRunningEvent) {
-          return current;
+        if (runningEventIndex >= 0) {
+          return current.map((event, index) =>
+            index === runningEventIndex
+              ? {
+                  ...event,
+                  status,
+                  message,
+                  durationMs,
+                  timestamp: status === "running" ? event.timestamp : Date.now()
+                }
+              : event
+          );
         }
 
         return [
@@ -260,6 +335,80 @@ export default function ResearchPage() {
     []
   );
 
+  const completeTimelineAgent = useCallback(
+    (agent: string, message: string, durationMs?: number) => {
+      setEvents((current) => {
+        const hasRunningEvent = current.some(
+          (event) => event.agent === agent && event.status === "running"
+        );
+
+        if (!hasRunningEvent) {
+          return current;
+        }
+
+        return current.map((event) =>
+          event.agent === agent && event.status === "running"
+            ? {
+                ...event,
+                status: "completed",
+                message,
+                durationMs,
+                timestamp: Date.now()
+              }
+            : event
+        );
+      });
+    },
+    []
+  );
+
+  const saveRecentTopic = useCallback((nextTopic: string) => {
+    setRecentTopics((current) => {
+      const normalized = nextTopic.trim().replace(/\s+/g, " ");
+      const updated = [
+        normalized,
+        ...current.filter(
+          (item) => item.trim().toLowerCase() !== normalized.toLowerCase()
+        )
+      ].slice(0, 5);
+
+      try {
+        window.localStorage.setItem(RECENT_TOPICS_KEY, JSON.stringify(updated));
+      } catch {
+        // Local storage can be unavailable in private or embedded contexts.
+      }
+
+      return updated;
+    });
+  }, []);
+
+  const handleTopicChange = useCallback(
+    (nextTopic: string) => {
+      setTopic(nextTopic);
+      if (isTopicValidationError(error)) {
+        setError(null);
+        setRunStatus((current) => (current === "failed" ? "idle" : current));
+      }
+    },
+    [error]
+  );
+
+  const chooseHeaderSample = useCallback(() => {
+    handleTopicChange(SAMPLE_TOPIC);
+    setIsMobileMenuOpen(false);
+    window.requestAnimationFrame(() => {
+      const textarea = document.getElementById(
+        "research-topic"
+      ) as HTMLTextAreaElement | null;
+
+      textarea?.scrollIntoView({
+        behavior: "smooth",
+        block: "center"
+      });
+      textarea?.focus({ preventScroll: true });
+    });
+  }, [handleTopicChange]);
+
   const clearWorkspace = useCallback(() => {
     abortWasRequestedRef.current = true;
     abortControllerRef.current?.abort();
@@ -272,6 +421,9 @@ export default function ResearchPage() {
     setCompletedDurationMs(null);
     setLastRunCached(false);
     setError(null);
+    setValidationPulse(0);
+    setShowReadyToast(false);
+    completionToastKeyRef.current = "";
     setRunStatus("idle");
     setIsRunning(false);
   }, []);
@@ -349,7 +501,12 @@ export default function ResearchPage() {
           const nextSources = Array.isArray(payload?.sources)
             ? payload.sources.filter(isSource)
             : [];
-          setSources(nextSources);
+          setSources(
+            nextSources.map((source) => ({
+              ...source,
+              ...normalizeSourceSnippet(source.fullSnippet ?? source.snippet)
+            }))
+          );
           break;
         }
         case "synthesis_started":
@@ -372,6 +529,7 @@ export default function ResearchPage() {
             "Research workflow completed.",
             getNumber(payload, "durationMs")
           );
+          completeTimelineAgent("Supervisor Agent", "Supervisor plan completed.");
           break;
         case "error": {
           const message = getString(payload, "message") || "Something went wrong.";
@@ -383,13 +541,20 @@ export default function ResearchPage() {
           const ok = getBoolean(payload, "ok");
           setIsRunning(false);
           setRunStatus(ok === false ? "failed" : "completed");
+          if (ok !== false) {
+            completeTimelineAgent(
+              "Research Workflow",
+              "Research workflow completed."
+            );
+            completeTimelineAgent("Supervisor Agent", "Supervisor plan completed.");
+          }
           break;
         }
         default:
           break;
       }
     },
-    [addTimelineEvent]
+    [addTimelineEvent, completeTimelineAgent]
   );
 
   const handleSubmit = useCallback(async () => {
@@ -401,6 +566,7 @@ export default function ResearchPage() {
     if (!validation.ok || !validation.topic) {
       setError(validation.error ?? "Enter a valid research topic.");
       setRunStatus("failed");
+      setValidationPulse((current) => current + 1);
       return;
     }
 
@@ -431,8 +597,12 @@ export default function ResearchPage() {
     setCompletedDurationMs(null);
     setLastRunCached(false);
     setError(null);
+    setValidationPulse(0);
+    setShowReadyToast(false);
+    completionToastKeyRef.current = "";
     setRunStatus("running");
     setIsRunning(true);
+    saveRecentTopic(validation.topic);
 
     try {
       const response = await fetch("/api/research", {
@@ -508,7 +678,7 @@ export default function ResearchPage() {
       }
       setIsRunning(false);
     }
-  }, [addTimelineEvent, handleStreamEvent, isRunning, topic]);
+  }, [addTimelineEvent, handleStreamEvent, isRunning, saveRecentTopic, topic]);
 
   const statusLabel = useMemo(() => {
     if (runStatus === "running") return "Agents researching";
@@ -548,7 +718,7 @@ export default function ResearchPage() {
       sources
         .map(
           (source) =>
-            `[${source.id}] ${source.title}\n${source.url}\n${source.snippet}`
+            `[${source.id}] ${source.title}\n${source.url}\n${source.fullSnippet ?? source.snippet}`
         )
         .join("\n\n"),
     [sources]
@@ -589,7 +759,21 @@ export default function ResearchPage() {
             </p>
           </div>
 
-          <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-start">
+          <button
+            type="button"
+            onClick={() => setIsMobileMenuOpen((current) => !current)}
+            className="studio-button inline-flex h-10 w-10 items-center justify-center bg-studio-cream text-studio-graphite md:hidden"
+            aria-label="Open research workspace actions"
+            aria-expanded={isMobileMenuOpen}
+          >
+            {isMobileMenuOpen ? (
+              <X className="h-4 w-4" aria-hidden="true" />
+            ) : (
+              <Menu className="h-4 w-4" aria-hidden="true" />
+            )}
+          </button>
+
+          <div className="hidden flex-col items-start gap-3 md:flex sm:flex-row sm:items-start">
             <ThemeToggle />
             <div className="clay-card flex items-start gap-3 p-3">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-studio-violet/40">
@@ -614,16 +798,81 @@ export default function ResearchPage() {
           </div>
         </header>
 
+        <AnimatePresence>
+          {isMobileMenuOpen ? (
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.2 }}
+              className="clay-card mb-6 grid gap-3 p-4 md:hidden"
+            >
+              <div className="flex flex-wrap items-center gap-2">
+                <ThemeToggle />
+                <button
+                  type="button"
+                  onClick={chooseHeaderSample}
+                  className="studio-button inline-flex h-10 min-w-0 items-center gap-2 bg-studio-cream px-3 text-sm font-semibold text-studio-graphite"
+                >
+                  <Zap className="h-4 w-4 text-studio-coral" aria-hidden="true" />
+                  Prefill sample
+                </button>
+                <a
+                  href={PROJECT_GITHUB_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="studio-button inline-flex h-10 min-w-0 items-center gap-2 bg-studio-ink px-3 text-sm font-semibold text-studio-cream"
+                >
+                  <Github className="h-4 w-4" aria-hidden="true" />
+                  GitHub
+                </a>
+              </div>
+              <div className="rounded-lg border border-studio-ink/10 bg-studio-cream/70 p-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  <StatusPill status={runStatus} label={statusLabel} />
+                  {envStatus ? (
+                    <span className="inline-flex rounded-lg border border-studio-ink/10 bg-studio-cream/70 px-2.5 py-1 text-xs font-semibold text-studio-graphite">
+                      {envStatus.fastMode ? "Fast Mode" : "Full Agent Mode"}
+                    </span>
+                  ) : null}
+                </div>
+                <p className="mt-2 text-xs font-medium leading-5 text-studio-graphite/70">
+                  {statusDescription}
+                </p>
+              </div>
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {showReadyToast ? (
+            <motion.div
+              initial={{ opacity: 0, y: -12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -12 }}
+              transition={{ duration: 0.24 }}
+              className="fixed right-5 top-5 z-50 flex max-w-[calc(100vw-2.5rem)] items-center gap-2 rounded-lg border border-studio-sage/35 bg-studio-cream px-4 py-3 text-sm font-bold text-studio-ink shadow-lift"
+              role="status"
+              aria-live="polite"
+            >
+              <CheckCircle2 className="h-4 w-4 text-studio-sage" aria-hidden="true" />
+              Your research report is ready
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
+
         <div className="grid min-w-0 gap-8 lg:grid-cols-[420px_minmax(0,1fr)]">
           <aside className="min-w-0">
             <TopicInput
               topic={topic}
-              onTopicChange={setTopic}
+              onTopicChange={handleTopicChange}
               onSubmit={handleSubmit}
               onReset={clearWorkspace}
               onCancel={handleCancel}
               isRunning={isRunning}
               error={error}
+              errorMotionKey={validationPulse}
+              recentTopics={recentTopics}
               envStatus={envStatus}
             />
 
@@ -687,6 +936,7 @@ export default function ResearchPage() {
               modeLabel={modeLabel}
               durationMs={completedDurationMs}
               cached={lastRunCached}
+              runStatus={runStatus}
             />
 
             <section>
